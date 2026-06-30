@@ -1,22 +1,21 @@
 export const verifyEmailTemplate= (email,otp)=>{
-    return `
-    <!DOCTYPE html>
+ return `
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Insta_CloneF · OTP Email</title>
-  <!-- inline style + embedded CSS for email clients -->
   <style>
-    /* reset & base */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+    
     body {
-      background-color: #f4f7fc;
-      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background-color: #f0f4f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -24,227 +23,343 @@ export const verifyEmailTemplate= (email,otp)=>{
       margin: 0;
       padding: 20px;
     }
+
     .email-wrapper {
-      max-width: 560px;
+      max-width: 580px;
       width: 100%;
       background: #ffffff;
-      border-radius: 28px;
-      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.10);
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(2px);
-      transition: 0.2s;
     }
+
+    /* HEADER */
     .email-header {
-      background: linear-gradient(145deg, #1e2b3c, #0f1a26);
-      padding: 28px 32px 20px 32px;
-      border-bottom: 4px solid #f7b731;
+      background: #0f1a2b;
+      padding: 32px 36px 24px 36px;
     }
+
     .app-name {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 700;
-      letter-spacing: -0.3px;
       color: #ffffff;
+      letter-spacing: -0.5px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
-    .app-name span {
+
+    .app-name .badge {
       background: #f7b731;
-      color: #0f1a26;
-      font-size: 16px;
+      color: #0f1a2b;
+      font-size: 14px;
       font-weight: 600;
-      padding: 0 12px;
-      border-radius: 40px;
-      line-height: 28px;
+      padding: 2px 16px;
+      border-radius: 30px;
       letter-spacing: 0.3px;
     }
+
     .app-sub {
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.6);
       font-size: 14px;
-      font-weight: 400;
       margin-top: 4px;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.3px;
     }
+
+    /* BODY */
     .email-body {
-      padding: 36px 32px 28px 32px;
-      background: #ffffff;
+      padding: 36px 36px 28px 36px;
     }
+
     .greeting {
       font-size: 22px;
       font-weight: 600;
-      color: #0b1a2b;
-      margin-bottom: 8px;
+      color: #0a1628;
+      margin-bottom: 6px;
     }
+
     .greeting small {
       font-weight: 400;
       font-size: 16px;
-      color: #4a5b6b;
+      color: #5a6f85;
     }
+
+    /* OTP CARD */
     .otp-card {
-      background: #f2f6fe;
-      border-radius: 20px;
-      padding: 24px 20px;
-      margin: 22px 0 18px 0;
+      background: #f4f8ff;
+      border-radius: 18px;
+      padding: 28px 20px 22px;
+      margin: 20px 0 18px 0;
       text-align: center;
-      border: 1px dashed #b8cef0;
+      border: 1px dashed #c5d8ef;
     }
+
     .otp-code {
-      font-size: 44px;
+      font-size: 46px;
       font-weight: 700;
-      letter-spacing: 8px;
-      color: #0b1a2b;
-      background: white;
-      padding: 12px 8px;
-      border-radius: 16px;
+      letter-spacing: 10px;
+      color: #0a1628;
+      background: #ffffff;
+      padding: 14px 12px;
+      border-radius: 14px;
       display: inline-block;
-      min-width: 220px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+      min-width: 240px;
       font-family: 'Courier New', monospace;
-      border: 1px solid #d9e6f5;
+      border: 1px solid #dce7f5;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
+
     .otp-hint {
-      color: #2d4b6e;
+      color: #2a4a6e;
       font-weight: 500;
-      margin-top: 6px;
+      margin-top: 8px;
       font-size: 15px;
     }
+
     .expiry-badge {
-      background: #fff3e0;
+      background: #fff4e6;
       border-radius: 40px;
-      padding: 8px 18px;
+      padding: 8px 22px;
       display: inline-block;
       font-weight: 500;
       font-size: 14px;
-      color: #b45a1c;
-      border: 1px solid #ffd9a8;
-      margin: 10px 0 14px 0;
+      color: #a65a1a;
+      border: 1px solid #fadcb8;
+      margin: 10px 0 16px 0;
     }
+
     .expiry-badge strong {
       font-weight: 700;
-      color: #9e4a0e;
+      color: #8a4508;
     }
+
     .msg {
-      color: #1f3347;
-      line-height: 1.6;
+      color: #1a2f44;
+      line-height: 1.7;
       font-size: 15px;
-      margin: 18px 0 16px 0;
+      margin: 18px 0 24px 0;
     }
-    .support-line {
-      background: #f8faff;
-      padding: 16px 18px;
+
+    /* ========== SUPPORT SECTION - PROFESSIONAL ========== */
+    .support-section {
+      background: #f7faff;
       border-radius: 18px;
-      border-left: 4px solid #f7b731;
-      margin: 22px 0 16px 0;
-      font-size: 14px;
-      color: #1f3347;
+      border: 1px solid #e6eef9;
+      padding: 6px 0;
+      margin: 20px 0 12px 0;
+      overflow: hidden;
+    }
+
+    .support-row {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 8px 4px;
+      padding: 14px 22px;
+      gap: 16px;
+      border-bottom: 1px solid #eef3fa;
     }
-    .support-line a {
-      color: #1e5a9b;
-      font-weight: 600;
-      text-decoration: none;
-      border-bottom: 1px dotted rgba(30, 90, 155, 0.3);
+
+    .support-row:last-child {
+      border-bottom: none;
     }
-    .support-line a:hover {
-      border-bottom: 2px solid #1e5a9b;
-    }
-    .founder {
+
+    .support-icon-wrap {
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      background: #e4edf9;
+      border-radius: 50%;
       display: flex;
-      justify-content: flex-end;
-      font-size: 13px;
-      color: #60758b;
-      margin-top: 6px;
-      border-top: 1px solid #e9eff5;
-      padding-top: 16px;
-      letter-spacing: 0.2px;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
     }
-    .founder strong {
-      color: #0b1a2b;
+
+    .support-text {
+      flex: 1;
+    }
+
+    .support-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #7a94b3;
       font-weight: 600;
-      margin-left: 4px;
     }
+
+    .support-value {
+      font-size: 16px;
+      font-weight: 500;
+      color: #0a1628;
+      margin-top: 1px;
+    }
+
+    .support-value a {
+      color: #1a6bb0;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .support-value a:hover {
+      text-decoration: underline;
+    }
+
+    .founder-chip {
+      display: inline-block;
+      background: #e8f0fe;
+      padding: 2px 16px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a3a5e;
+      margin-left: 10px;
+      border: 1px solid #d0dff0;
+    }
+
+    .founder-chip strong {
+      color: #0a1628;
+      font-weight: 700;
+    }
+
+    /* FOOTER */
     .footer-note {
       text-align: center;
       font-size: 12px;
-      color: #8a9cb0;
-      padding: 14px 32px 20px 32px;
+      color: #8a9eb5;
+      padding: 16px 36px 22px 36px;
+      border-top: 1px solid #eef3fa;
       background: #fafcff;
-      border-top: 1px solid #e6edf6;
     }
+
     .footer-note span {
-      opacity: 0.7;
+      opacity: 0.8;
     }
-    /* responsive */
+
+    .footer-note .dot {
+      display: inline-block;
+      margin: 0 6px;
+      opacity: 0.4;
+    }
+
+    /* RESPONSIVE */
     @media (max-width: 480px) {
-      .email-body { padding: 28px 18px; }
-      .otp-code { font-size: 34px; letter-spacing: 6px; min-width: 160px; }
-      .app-name { font-size: 24px; flex-wrap: wrap; }
-      .support-line { flex-direction: column; align-items: flex-start; }
+      .email-body {
+        padding: 24px 18px 20px 18px;
+      }
+      .email-header {
+        padding: 24px 18px 18px 18px;
+      }
+      .app-name {
+        font-size: 24px;
+      }
+      .otp-code {
+        font-size: 34px;
+        letter-spacing: 6px;
+        min-width: 180px;
+        padding: 10px 8px;
+      }
+      .support-row {
+        padding: 12px 16px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .support-icon-wrap {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        font-size: 16px;
+      }
+      .support-value {
+        font-size: 15px;
+      }
+      .founder-chip {
+        margin-left: 0;
+        margin-top: 4px;
+        display: inline-block;
+      }
+      .footer-note {
+        padding: 14px 18px 18px 18px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="email-wrapper">
-    <!-- header -->
+    <!-- HEADER -->
     <div class="email-header">
       <div class="app-name">
         Insta_CloneF
-        <span>🔐</span>
+        <span class="badge">🔐 OTP</span>
       </div>
-      <div class="app-sub">secure • instant • clone</div>
+      <div class="app-sub">Secure authentication · instant delivery</div>
     </div>
 
-    <!-- body -->
+    <!-- BODY -->
     <div class="email-body">
       <div class="greeting">
-        Hello 👋${email} <small>verify your identity</small>
+        Hello there ${email.split("@")[0].toUpperCase()}   👋
+      👋 <small>verify your identity</small>
       </div>
 
-      <!-- OTP card -->
+      <!-- OTP CARD -->
       <div class="otp-card">
         <div class="otp-code" id="otpDisplay">${otp}</div>
-        <div class="otp-hint">one‑time password</div>
+        <div class="otp-hint">Your one-time verification code</div>
       </div>
 
-      <!-- expiry info -->
+      <!-- EXPIRY -->
       <div style="text-align: center;">
         <div class="expiry-badge">
-          ⏳ expires in <strong>5 minutes</strong>
+          ⏳ This OTP will expire in <strong>5 minutes</strong>
         </div>
       </div>
 
       <p class="msg">
-        Use the code above to complete your action. <br>
-        If you didn’t request this, you can safely ignore this email.
+        Use the code above to complete your authentication.<br>
+        If you didn't request this, please ignore this email.
       </p>
 
-      <!-- support + founder inline -->
-      <div class="support-line">
-        <span>📧 support: </span>
-        <a href="mailto:meshram.abhinav1998@gmail.com">meshram.abhinav1998@gmail.com</a>
-        <span style="margin-left: auto; opacity: 0.6;">•</span>
-        <span style="font-weight: 400; color: #3f5a77;">founder: <strong>Abhinav Meshram</strong></span>
+      <!-- ===== SUPPORT SECTION - CLEAN & PROFESSIONAL ===== -->
+      <div class="support-section">
+        <!-- Row 1: Support Email -->
+        <div class="support-row">
+          <div class="support-icon-wrap">📧</div>
+          <div class="support-text">
+            <div class="support-label">Support Email</div>
+            <div class="support-value">
+              <a href="mailto:meshram.abhinav1998@gmail.com">meshram.abhinav1998@gmail.com</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Founder -->
+        <div class="support-row">
+          <div class="support-icon-wrap">👤</div>
+          <div class="support-text">
+            <div class="support-label">Founder</div>
+            <div class="support-value">
+              Abhinav Meshram
+              <span class="founder-chip">👑 Insta_CloneF</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- extra founder mention (clean) -->
-      <div class="founder">
-        <span>✨ built with ❤️ by <strong>Abhinav Meshram</strong> &nbsp;·&nbsp; Insta_CloneF</span>
+      <!-- Extra note -->
+      <div style="text-align: center; font-size: 13px; color: #7a94b3; margin-top: 14px;">
+        ⚡ For immediate assistance, reply to this email
       </div>
     </div>
 
-    <!-- footer -->
+    <!-- FOOTER -->
     <div class="footer-note">
-      <span>This is an automated message from Insta_CloneF. </span>
-      <span style="display:inline-block; margin:0 4px;">•</span>
-      <span>OTP valid for 5 minutes.</span>
+      <span>This is an automated message from Insta_CloneF</span>
+      <span class="dot">•</span>
+      <span>OTP valid for 5 minutes</span>
+      <span class="dot">•</span>
+      <span>© 2026 Insta_CloneF</span>
     </div>
   </div>
-
 </body>
 </html>
-    `
+ `
 }
