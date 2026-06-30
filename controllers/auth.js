@@ -1,6 +1,6 @@
-import OtpModel from "../models/otp.model.js"
 import UserModel from "../models/user.model.js"
 import otpgenerator from "otp-generator"
+import OtpModel from "../models/otp.model.js"
 
 
 export const otpSave= async(req, res) =>{

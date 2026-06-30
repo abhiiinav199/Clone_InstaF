@@ -1,4 +1,4 @@
-import mongoose from "moongoose"
+import mongoose from "mongoose"
 
 const otpSchema = new mongoose.Schema({
     otp:{
@@ -16,4 +16,5 @@ const otpSchema = new mongoose.Schema({
     }
 })
 
-export const OtpModel = mongoose.model("otp", otpSchema)
+const OtpModel = mongoose.model("Otp", otpSchema)
+export default OtpModel

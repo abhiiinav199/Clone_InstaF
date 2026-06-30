@@ -5,6 +5,7 @@ import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import { connectDB } from './config/db.js'
+import userRouter from './routes/user.route.js'
 dotenv.config({})
 
 const PORT = process.env.PORT || 8080
@@ -24,6 +25,8 @@ app.use(helmet({
 app.get("/", (_, res) => {
     res.json({ message: "hello world 3001" })
 })
+
+app.use("/api/v1/auth", userRouter)
 
 const startServer = async () => {
     try {

@@ -3,6 +3,6 @@ import { otpSave } from "../controllers/auth.js"
 
 const userRouter= express.Router()
 
-userRouter.post("/register", otpSave)
+userRouter.post("/otp-create", otpSave)
 
 export default userRouter
