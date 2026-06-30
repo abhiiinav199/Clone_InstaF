@@ -24,9 +24,8 @@ const otpSendMail = async(otp, email)=>{
 }
 
 //sending mail before saving otp 
-otpSchema.pre("save", async function(next){
+otpSchema.pre("save", async function(){
 await otpSendMail(this.otp, this.email)
-next()
 })
 
 const OtpModel = mongoose.model("Otp", otpSchema)

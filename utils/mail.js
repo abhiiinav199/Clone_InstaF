@@ -13,17 +13,13 @@ export const sendMail= async(email, subject,body)=>{
         })
 
         let info= await transporter.sendMail({
-            from: Clone_InstaF,
+            from: "Clone_InstaF",
             to: email,
             subject: subject,
             html: body
         })
         return info
     } catch (error) {
-        return res.status(500).json({ 
-            message: "Error occur during sending mail" || error.message || error,
-            error: true,
-            success: false
-        })
+        throw new Error(error.message || "Error occured during sending mail")
     }
 }
