@@ -65,7 +65,7 @@ export const signUp= async(req, res)=>{
         }
 
         //check if user already exists or not
-        const existedUser = UserModel.findOne({email: email})
+        const existedUser =await UserModel.findOne({email: email})
         if(existedUser){
             return res.status(400).json({
                 error: true,
@@ -77,14 +77,14 @@ export const signUp= async(req, res)=>{
         const latestOtp = await OtpModel.findOne({email}).sort({createdAt: -1})
 
         if(!latestOtp){
-            return res.status(4000).json({
+            return res.status(400).json({
                 error: true, 
                 success: false,
                 message: "OTP not found"
             })
         }
 
-        if(latestOtp !== otp){
+        if(latestOtp.otp !== Number(otp)){
             return res.status(400).json({
                 error: true,
                 success: false,
