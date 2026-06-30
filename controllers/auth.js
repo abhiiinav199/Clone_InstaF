@@ -1,5 +1,6 @@
 import OtpModel from "../models/otp.model.js"
 import UserModel from "../models/user.model.js"
+import otpgenerator from "otp-generator"
 
 
 export const otpSave= async(req, res) =>{
@@ -9,6 +10,7 @@ export const otpSave= async(req, res) =>{
 
         if(!email){
             return res.status(400).json({
+                error: true,
                 success: false,
                 message: "Something went wrong during fetching email"
             })
@@ -18,14 +20,26 @@ export const otpSave= async(req, res) =>{
 
         if(userExists){
             return res.status(400).json({
+                error : true,
                 success:false,
                 message: "User is already registered"
             })
         }
-        const otp = Math.floor(1000 + Math.random() * 9000)
-        const otpDocument = new OtpModel({email, otp})
-        await otpDocument.save()
+        const otp = otpgenerator.generate(4, {
+            upperCaseAlphabets: false,
+            lowerCaseAlphabets: false,
+            specialChars: false
+        })
 
+        //create entry in Db
+        const newOtp = await OtpModel.create({email: email, otp:otp})
+
+        return res.status(200).json({
+            error:false,
+            success:true,
+            message: "Otp sent successfully",
+            otp: newOtp
+        })
         
     } catch (error) {
         return res.status(500).json({ 
