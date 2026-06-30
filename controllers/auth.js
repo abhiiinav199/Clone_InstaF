@@ -2,6 +2,8 @@ import UserModel from "../models/user.model.js"
 import otpgenerator from "otp-generator"
 import OtpModel from "../models/otp.model.js"
 import { hashingPassword } from "../utils/hashingPassword.js"
+import bcryptjs from "bcryptjs"
+
 
 //save otp in db and used pre method in OtpModel to send mail before saving data in db 
 export const otpSave= async(req, res) =>{
@@ -106,6 +108,50 @@ export const signUp= async(req, res)=>{
             user: user
         })
 
+        
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        })
+    }
+}
+
+
+export const login = async(req, res) =>{
+    try {
+        const {email, password} = req.body
+
+        //validation
+        if(!email || !password){
+            return res.status(400).json({
+                error: true,
+                success: false,
+                message: "All fields are required"
+            })
+        }
+
+        //check user account is created or not
+        const user = await UserModel.findOne({email:email})
+
+        if(!user){
+            return res.status(400).json({
+                error: true,
+                success: false,
+                message: "Email is not registered"
+            })
+        }
+       const checkPassword = await bcryptjs.compare(password, user.password)
+        if (!checkPassword) {
+            return res.status(400).json({
+                message: "Check your username & password",
+                error: true,
+                success: false
+            })
+        }
+
+        
         
     } catch (error) {
         return res.status(500).json({
