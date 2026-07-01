@@ -167,13 +167,12 @@ export const login = async(req, res) =>{
         }
         
         res.cookie('token', token, cookiesOptions)
+        user.token= token
         return res.status(200).json({
             message: "Login Successfully",
             error: false,
             success: true,
-            data:{
-                token
-            }
+            user:user
         })
 
         
