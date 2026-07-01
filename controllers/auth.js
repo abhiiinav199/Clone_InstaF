@@ -3,6 +3,7 @@ import otpgenerator from "otp-generator"
 import OtpModel from "../models/otp.model.js"
 import { hashingPassword } from "../utils/hashingPassword.js"
 import bcryptjs from "bcryptjs"
+import { generateToken } from "../utils/generateToken.js"
 
 
 //save otp in db and used pre method in OtpModel to send mail before saving data in db 
@@ -150,8 +151,31 @@ export const login = async(req, res) =>{
                 success: false
             })
         }
-
         
+        //payload for jwt
+        const payload={
+            userId: user._id,
+            userName: user.userName, 
+            email:user.email
+        }
+        const token = await generateToken(payload)
+
+        const cookiesOptions= {
+            httpOnly: true,
+            secure:true,
+            sameSite: "None"
+        }
+        
+        res.cookie('token', token, cookiesOptions)
+        return res.status(200).json({
+            message: "Login Successfully",
+            error: false,
+            success: true,
+            data:{
+                token
+            }
+        })
+
         
     } catch (error) {
         return res.status(500).json({
