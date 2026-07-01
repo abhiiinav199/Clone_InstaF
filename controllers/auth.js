@@ -167,12 +167,16 @@ export const login = async(req, res) =>{
         }
         
         res.cookie('token', token, cookiesOptions)
-        user.token= token
+
+        // while sending token or data you can also use this but always convert toObject() before setting data
+        // const u= user.toObject()
+        // u.token= token
         return res.status(200).json({
             message: "Login Successfully",
             error: false,
             success: true,
-            user:user
+            user:user,
+            token: token
         })
 
         
