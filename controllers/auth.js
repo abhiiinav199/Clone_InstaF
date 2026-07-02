@@ -134,7 +134,7 @@ export const login = async(req, res) =>{
         }
 
         //check user account is created or not
-        const user = await UserModel.findOne({email:email})
+        const user = await UserModel.findOne({email:email}).select("+password")
 
         if(!user){
             return res.status(400).json({
@@ -169,14 +169,14 @@ export const login = async(req, res) =>{
         res.cookie('token', token, cookiesOptions)
 
         // while sending token or data you can also use this but always convert toObject() before setting data
-        // const u= user.toObject()
-        // u.token= token
+        const u= user.toObject()
+        u.token= token
+        u.password= undefined
         return res.status(200).json({
             message: "Login Successfully",
             error: false,
             success: true,
-            user:user,
-            token: token
+            user:u
         })
 
         
