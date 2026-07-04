@@ -18,13 +18,15 @@ const userSchema = new mongoose.Schema({
         required: true,
         select: false
     },
-    profilePic: {
+    about: {
         type: String,
         default: ""
     },
-    bio: {
+    dateOfBirth: {
         type: String,
-        default: ""
+    },
+    profilePicture:{
+        type:String
     },
 
 }, { timestamps: true })
