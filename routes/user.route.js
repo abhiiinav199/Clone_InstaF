@@ -1,5 +1,5 @@
 import express from "express"
-import { login, otpSave, resetPasswordOtpSend, resetPasswordOtpVerify, signUp } from "../controllers/auth.js"
+import { login, otpSave, resetPassword, resetPasswordOtpSend, resetPasswordOtpVerify, signUp } from "../controllers/auth.js"
 
 const userRouter= express.Router()
 
@@ -8,5 +8,5 @@ userRouter.post("/sign-up", signUp)
 userRouter.post("/log-in", login)
 userRouter.post("/reset-password", resetPasswordOtpSend)
 userRouter.post("/reset-password-otp-verify", resetPasswordOtpVerify)
-
+userRouter.put("/reset-password", resetPassword)
 export default userRouter

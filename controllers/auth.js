@@ -98,7 +98,7 @@ export const signUp = async (req, res) => {
         const hashedPassword = await hashingPassword(password)
 
         //generate radnom avatar
-        const avatar= `https://api.dicebear.com/10.x/adventurer/svg?seed=${userName}`
+        const avatar = `https://api.dicebear.com/10.x/adventurer/svg?seed=${userName}`
 
         const user = await UserModel.create({
             userName,
@@ -291,17 +291,17 @@ export const resetPasswordOtpVerify = async (req, res) => {
 
 
 //reset password
-export const resetPassword = async(req, res)=>{
+export const resetPassword = async (req, res) => {
     try {
-        const {email, otp, password,confirmPssword} = req.body
-        if(!email || !otp || !password || !confirmPssword){
+        const { email, otp, password, confirmPssword } = req.body
+        if (!email || !otp || !password || !confirmPssword) {
             return res.status(400).json({
                 error: true,
                 success: false,
                 message: "All fields are required"
             })
         }
-        if(password !== confirmPssword){
+        if (password !== confirmPssword) {
             return res.status(400).json({
                 error: true,
                 success: false,
@@ -310,40 +310,41 @@ export const resetPassword = async(req, res)=>{
         }
 
         //verify otp
-        const latestOtp = await OtpModel.find({email: email}).sort({createdAt: -1}).limit(1)
+        const latestOtp = await OtpModel.find({ email: email }).sort({ createdAt: -1 }).limit(1)
 
-        if(!latestOtp){
+        if (!latestOtp.length) {
             return res.status(404).json({
                 message: "OTP is expired",
                 error: true,
                 success: false
             })
         }
-        
-        if(latestOtp[0] !== otp){
+
+        if (latestOtp[0].otp !== otp) {
             return res.status(400).json({
                 message: "OTP is not valid",
                 error: true,
                 success: false
             })
-        
+
         }
 
-           const user = await User.findOne({email:email});
+        const user = await UserModel.findOne({ email: email });
 
-             if(await bcryptjs.compare(password,user.password)){
+        if (await bcryptjs.compare(password, user.password)) {
             return res.status(400).json({
-                success:false,
-                message:"New password must be different from existing password",
+                success: false,
+                message: "New password must be different from existing password",
             })
-        }  
+        }
 
-        const hashedPassword= await hashingPassword(password)
+        const hashedPassword = await hashingPassword(password)
 
 
-        const updatedUser= await UserModel.findByIdAndUpdate({email:email}, {
+        const updatedUser = await UserModel.findByIdAndUpdate({ email: email }, {
             password: hashedPassword
-        },{new:true
+        }, {
+            new: true
         })
 
         return res.status(200).json({
@@ -351,9 +352,9 @@ export const resetPassword = async(req, res)=>{
             success: true,
             message: "Password reset successfully",
             user: updatedUser
-            
+
         })
-        
+
     } catch (error) {
         return res.status(500).json({
             message: error.message || error,
