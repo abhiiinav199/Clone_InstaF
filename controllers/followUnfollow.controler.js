@@ -10,7 +10,7 @@ export const follow = async (req, res) => {
 
         //validation
         if (!targetUserId || !currentUserId) {
-            return res.status(400).jsonn({
+            return res.status(400).json({
                 error: true,
                 success: false,
                 message: "Something went wrong during fetching Id's"
@@ -27,7 +27,7 @@ export const follow = async (req, res) => {
         }
 
         //target userExist or not
-        const targetUser = await UserModel.findById({ targetUserId })
+        const targetUser = await UserModel.findById(targetUserId)
         if (!targetUser) {
             return res.status(404).json({
                 error: true,
@@ -37,9 +37,9 @@ export const follow = async (req, res) => {
         }
 
         //already Followed
-        const currentUser = await UserModel.findById({ currentUserId })
+        const currentUser = await UserModel.findById(currentUserId)
 
-        if (currentUser.following.includes(targetUserId)) {
+        if (currentUser.following.some(id => id.toString() === targetUserId)) {
             return res.status(400).json({
                 error: true,
                 success: false,
@@ -47,7 +47,7 @@ export const follow = async (req, res) => {
             })
         }
 
-        if (targetUser.followers.includes(currentUserId)) {
+        if (targetUser.followers.some(id => id.toString() === currentUserId)) {
             return res.status(400).json({
                 message: "You are already following this user",
                 error: true,
@@ -56,16 +56,16 @@ export const follow = async (req, res) => {
         }
         //if userAccount Private ? followRequest me dalenge current user ki id :direct follow
         if (targetUser.accountPrivate) {
-            if (targetUser.pendingFollowersRequest.includes(currentUserId)) {
+            if (targetUser.pendingFollowersRequest.some(id =>id.toString() === currentUserId)) {
                 return res.status(400).json({
                     message: "You have already sent a follow request to this user",
                     error: true,
                     success: false
                 })
             }
-        }
+        
 
-        const updatedTargetUser = await UserModel.findByIdAndUpdate({ targetUserId }, {
+        const updatedTargetUser = await UserModel.findByIdAndUpdate(targetUserId , {
             $push: { pendingFollowersRequest: currentUserId }
         }, {
             new: true
@@ -76,16 +76,17 @@ export const follow = async (req, res) => {
             error: false,
             success: true,
         })
+    }
 
         //direct follow and update targetUser
-        const updatedTargetedUser = await UserModel.findByIdAndUpdate({ targetUserId }, {
-            $push: { following: currentUserId },
+        const updatedTargetedUser = await UserModel.findByIdAndUpdate(targetUserId , {
+            $push: { followers: currentUserId },
         }, {
             new: true
         })
 
         //update current user 
-        const updatedCurrentUser = await UserModel.findByIdAndUpdate({ currentUserId }, {
+        const updatedCurrentUser = await UserModel.findByIdAndUpdate( currentUserId , {
             $push: { following: targetUserId}
         }, {
             new: true
