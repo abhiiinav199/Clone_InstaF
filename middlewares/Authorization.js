@@ -4,7 +4,6 @@ dotenv.config({})
 export const loginValidation = (req, res, next)=>{
     try {
         const token = req?.cookies?.token || req?.headers?.authorization?.split(" ")[1] //req.cookies.accessToken is for browser and req?.headers.authorization?.split(" ")[1] is for mobile devices which do not support cookies
-
         //validation
         if(!token ){
             return res.status(401).json({
@@ -13,10 +12,10 @@ export const loginValidation = (req, res, next)=>{
                 success: false
             })
         }
+        console.log(token)
 
         //decoding the token
         const decode = jwt.verify(token, process.env.JWT_SECRET)
-
         if(!decode){
             return res.status(401).json({
                 message: "Unauthorised Access",
@@ -30,7 +29,7 @@ export const loginValidation = (req, res, next)=>{
 
         next()
     } catch (error) {
-        return res.status(500).json({
+        return res.status(403).json({
             message:"Invalid or Expired Token",
             error: true, 
             success: false
