@@ -6,7 +6,7 @@ export const follow = async (req, res) => {
         const { targetUserId } = req.body
 
         //current userId
-        const { currentUserId } = req.user
+        const currentUserId  = req.user.userId
 
         //validation
         if (!targetUserId || !currentUserId) {
@@ -36,7 +36,7 @@ export const follow = async (req, res) => {
             })
         }
 
-        //already Follow
+        //already Followed
         const currentUser = await UserModel.findById({ currentUserId })
 
         if (currentUser.following.includes(targetUserId)) {
