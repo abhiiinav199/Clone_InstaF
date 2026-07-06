@@ -52,3 +52,6 @@ coverage/
 *.zip
 *.rar
 *.7z
+
+
+*.md
