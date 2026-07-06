@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import { connectDB } from './config/db.js'
 import userRouter from './routes/user.route.js'
+import followUnfollowRouter from './routes/followUnfollow.route.js'
 dotenv.config({})
 
 const PORT = process.env.PORT || 8080
@@ -27,6 +28,7 @@ app.get("/", (_, res) => {
 })
 
 app.use("/api/v1/auth", userRouter)
+app.use("/api/v1", followUnfollowRouter)
 
 const startServer = async () => {
     try {
