@@ -28,7 +28,33 @@ const userSchema = new mongoose.Schema({
     profilePicture:{
         type:String
     },
-
+    accountPrivate:{
+        type:Boolean,
+        default:false,
+        required: true
+    },
+    followers:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"
+        }
+    ],
+    following:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"
+        }
+    ],
+    pendingFollowersRequest:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"
+        }
+    ],
+    // profilePicturId:{
+    //     type:String
+    // },
+    
 }, { timestamps: true })
 
 const UserModel = mongoose.model("User", userSchema)
