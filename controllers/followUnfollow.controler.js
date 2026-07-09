@@ -105,3 +105,84 @@ export const follow = async (req, res) => {
         })
     }
 }
+
+
+export const unfollow= async(req, res) =>{
+    try {
+        const { targetUserId } = req.body
+
+        //current userId-getting from middleware
+        const currentUserId  = req.user.userId 
+
+        //validation
+        if(!targetUserId || !currentUserId){
+            return res.status(400).json({
+                message: "Invalid reques. Both current user ID and target user ID are required",
+                error: true,
+                successL: false
+            })
+        }
+
+        //self unfollow prevention 
+        if(currentUserId === targetUserId){
+            return res.status(400).json({
+                message: "Invalid request",
+                error: true,
+                success: false
+            })
+        }
+
+        // target userExist
+        const targetUser = await UserModel.findById(targetUserId)
+        if(!targetUser){
+            return res.status(404).json({
+                message: "The user your are trying to follow does not exist",
+                error: true,
+                success: false
+            })
+        }
+
+        if(!targetUser.followers.includes(currentUserId)){
+            return res.status(400).json({
+                message: "You are not following this user",
+                error: true,
+                success: false
+            })
+        }
+
+        const currentUser= await UserModel.findyById(currentUserId)
+
+        if(!currentUser.following.includes(targetUserId)){
+            return res.status(400).json({
+                message: "You are not following this user",
+                error: true,
+                success: false
+            })
+        }
+
+        // update target user- removing 
+        const updatedTargetUser= await UserModel.findByIdAndUpdate(targetUserId,{
+            $pull:{followers: currentUserId}
+        },{new:true})
+
+        //update current user- removing
+        const updateCurrentUser= await UserModel.findByIdAndUpdate(currentUserId,{
+            $pull:{following: targetUserId}
+        },{new:true})
+
+        return res.status(200).json({
+            message: "User unfollowed successfully",
+            error: false,
+            success: true,
+        })
+
+
+        
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        })
+    }
+}
