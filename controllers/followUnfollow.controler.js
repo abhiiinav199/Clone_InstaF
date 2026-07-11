@@ -283,70 +283,57 @@ export const acceptFollowRequest = async (req, res) => {
 }
 
 //reject follow request
-// export const rejectFollowRequest = async (req, res) => {
-//     try {
-//         //target userId-> jisne tumko request bheja hai
-//         const { targetUserId } = req.body
+export const rejectFollowRequest = async (req, res) => {
+    try {
+        // target userId -> jisne tumko follow request bheja hai 
+        const {targetUserId} = req.params;
 
-//         //current userId
-//         const currentUserId = req.user.userId
+        // current userId 
+        const currentUserId = req.user.userId;
 
-//         //validation
-//         if (!targetUserId || !currentUserId) {
-//             return res.status(400).json({
-//                 message:
-//                     "Invalid request. Both current user ID and target user ID are required",
-//                 error: true,
-//                 successL: false
-//             })
-//         }
+        // validation
+        if(!targetUserId || !currentUserId){
+            return res.status(400).json({
+                success:false,
+                message:"Invalid request. Both current user ID and target user ID are required."
+            })
+        }
 
-//         //self-follow prevetion
-//         // if (currentUserId === targetUserId) {
-//         //     return res.status(400).json({
-//         //         message: "You cannot follow yourself",
-//         //         error: true,
-//         //         success: false
-//         //     })
-//         // }
+        
+        if(currentUserId === targetUserId){
+            return res.status(400).json({
+                success:false,
+                message:"both userId is same"
+            })
+        }
 
-//         //target userExist or not
-//         const targetUser = await UserModel.findById(targetUserId)
+        const currentUser = await User.findById(currentUserId);
+         
+        if(!currentUser.pendingFollowersRequest.includes(targetUserId)){
+           return res.status(400).json(({
+            succees:false,
+            message:"Follow requset not found"
 
-//         if (!targetUser) {
-//             return res.status(404).json({
-//                 message: "The user you are trying to accept follow request does not exist",
-//                 error: true,
-//                 success: false
-//             })
-//         }
+           }))
+        }
 
-//         //current userExist or Not 
-//         const currentUser = await UserModel.findById(currentUserId)
+        //  update the  current user
+        const updatedUser = await User.findByIdAndUpdate(currentUserId,{
+            $pull:{pendingFollowersRequest:targetUserId}
+        },{new:true});
 
-//         //already followed check
-//         if (currentUser.followers.some(id => id.toString() === targetUserId)) {
-//             return res.status(400).json({
-//                 message: `${targetUser.userName} is already following you`,
-//                 error: true,
-//                 success: false
-//             })
-//         }
-//         //already followed check
-//         if (targetUser.following.some(id => id.toString() === currentUserId)) {
-//             return res.status(400).json({
-//                 message: `You are already following ${targetUser.userName}`,
-//                 error: true,
-//                 success: false
-//             })
-//         }
+        // return response
+        return res.status(200).json({
+            success:true,
+            message:"Follow request reject successfully",
+        })
 
-//     } catch (error) {
-//         return res.status(500).json({
-//             message: error.message || error,
-//             error: true,
-//             success: false
-//         })
-//     }
-// }
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error: true,
+            success: false
+        })
+    }
+}
 
