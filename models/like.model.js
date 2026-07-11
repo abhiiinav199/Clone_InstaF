@@ -11,4 +11,8 @@ const likeSchema= new mongoose.Schema({
         ref: "post",
         required: true,
     }
-})
+},{timestamps:true})
+
+const likeModel= mongoose.model("Like", likeSchema)
+
+export default likeModel
