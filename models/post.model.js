@@ -29,6 +29,11 @@ const postSchema = new mongoose.Schema({
     postDecription:{
         type: String,
         trim: true,
+    },
+    postType:{
+        type:  String,
+        enum: ["image", "video"],
+        required: true
     }
 }, { timestamps: true })
 
