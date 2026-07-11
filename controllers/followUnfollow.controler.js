@@ -299,7 +299,7 @@ export const rejectFollowRequest = async (req, res) => {
             })
         }
 
-        
+
         if(currentUserId === targetUserId){
             return res.status(400).json({
                 success:false,
@@ -310,7 +310,7 @@ export const rejectFollowRequest = async (req, res) => {
         const currentUser = await User.findById(currentUserId);
          
         if(!currentUser.pendingFollowersRequest.includes(targetUserId)){
-           return res.status(400).json(({
+           return res.status(404).json(({
             succees:false,
             message:"Follow requset not found"
 

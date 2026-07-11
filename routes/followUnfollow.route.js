@@ -5,7 +5,7 @@ const followUnfollowRouter = express.Router()
 
 followUnfollowRouter.post("/follow", loginValidation, follow)
 followUnfollowRouter.delete("/unfollow", loginValidation, unfollow)
-followUnfollowRouter.post("/accept-follow-request", loginValidation, acceptFollowRequest)
+followUnfollowRouter.put("/accept-follow-request", loginValidation, acceptFollowRequest)
 followUnfollowRouter.delete("/reject-follow-request", loginValidation, rejectFollowRequest)
 
 export default followUnfollowRouter
