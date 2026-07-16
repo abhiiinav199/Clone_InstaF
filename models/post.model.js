@@ -5,7 +5,7 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    postId: {          //Storing cloudinary publicId sot that while deleting it will also delete from cloudinart
+    postId: {          //Storing cloudinary publicId so that while deleting it will also delete from cloudinary
         type: String,
         required: true
     },
