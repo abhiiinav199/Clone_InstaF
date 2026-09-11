@@ -1,14 +1,21 @@
 import mongoose from "mongoose"
 
 const postSchema = new mongoose.Schema({
-    postUrl: {
-        type: String,
-        required: true
-    },
-    postId: {          //Storing cloudinary publicId so that while deleting it will also delete from cloudinary
-        type: String,
-        required: true
-    },
+    media: [{ // Array to store multiple media items
+        postUrl: {
+            type: String,
+            required: true
+        },
+        postId: {          // Storing cloudinary publicId so that while deleting it will also delete from cloudinary
+            type: String,
+            required: true
+        },
+        postType: {
+            type: String,
+            enum: ["image", "video"],
+            required: true
+        }
+    }],
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -29,11 +36,6 @@ const postSchema = new mongoose.Schema({
     postDecription:{
         type: String,
         trim: true,
-    },
-    postType:{
-        type:  String,
-        enum: ["image", "video"],
-        required: true
     }
 }, { timestamps: true })
 

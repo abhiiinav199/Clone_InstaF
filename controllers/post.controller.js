@@ -53,25 +53,50 @@ export const postUpload = async (req, res) => {
             })
         }
 
-        
+
         // ✅ loop over each file, convert buffer to base64, upload one by one
         const uploadedFiles = []
-        
+
         for (const fileDetail of fileDetails) {
             const base64 = `data:${fileDetail.mimeType};base64,${fileDetail.buffer.toString("base64")}`
             const result = await cloudinaryUpload(base64, process.env.CLOUDINARY_FOLDER_NAME)
             uploadedFiles.push(result)
         }
-        
+
+        // Map uploadedFiles to the new 'media' schema structure
+        const mediaArray = uploadedFiles.map(file => ({
+            postUrl: file.secure_url,
+            postId: file.public_id,
+            postType: file.resource_type === "video" ? "video" : "image"
+        }));
+
         // ✅ save all uploaded file URLs and IDs
         const newPost = await PostModel.create({
             user: userId,
             postDecription: postDescription,
-            postUrl: uploadedFiles[0].secure_url,   // or store as array if you update the schema
-            postId: uploadedFiles[0].public_id,     // ✅ now correctly saving public_id
-            postType: uploadedFiles[0].resource_type === "video" ? "video" : "image"
+            media: mediaArray,
+            // postUrl: uploadedFiles[0].secure_url,   // or store as array if you update the schema
+            // postId: uploadedFiles[0].public_id,     // ✅ now correctly saving public_id
+            // postType: uploadedFiles[0].resource_type === "video" ? "video" : "image"
         })
-        
+
+
+        const hasVideo = uploadedFiles.some(f => f.resource_type === "video")
+        const hasImage = uploadedFiles.some(f => f.resource_type === "image")
+
+        // let mediaType = hasVideo && hasImage ? "Post" : hasVideo ? "Video" : "Image"
+        let mediaType = (hasVideo && hasImage) ? "Post"
+            : hasVideo ? "Video"
+                : hasImage ? "Image"
+                    : "No media"; // Fallback when there is neither video nor image
+
+        return res.status(200).json({
+            message: `${mediaType} uploaded successfully`,
+            success: true,
+            error: false,
+            data: newPost
+        })
+
         // const uploadPost = await cloudinaryUpload(files, process.env.CLOUDINARY_FOLDER_NAME)
 
         //  const newPost= await PostModel.create({
@@ -82,15 +107,6 @@ export const postUpload = async (req, res) => {
         //     postType: uploadPost.resource_type
 
         //  })
-
-        return res.status(200).json({
-
-            message: "Post uploaded successfully",
-            success: true,
-            error: false,
-            data: newPost
-        })
-
     } catch (error) {
         return res.status(500).json({
             message: error.message || error,

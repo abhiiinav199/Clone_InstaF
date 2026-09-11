@@ -329,7 +329,7 @@ export const resetPassword = async (req, res) => {
 
         }
 
-        const user = await UserModel.findOne({ email: email });
+        const user = await UserModel.findOne({ email: email }).select("+password");
 
         if (await bcryptjs.compare(password, user.password)) {
             return res.status(400).json({
@@ -341,7 +341,7 @@ export const resetPassword = async (req, res) => {
         const hashedPassword = await hashingPassword(password)
 
 
-        const updatedUser = await UserModel.findByIdAndUpdate({ email: email }, {
+        const updatedUser = await UserModel.findByIdAndUpdate({ _id: user._id }, {
             password: hashedPassword
         }, {
             new: true
