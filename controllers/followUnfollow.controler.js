@@ -118,9 +118,9 @@ export const unfollow = async (req, res) => {
         //validation
         if (!targetUserId || !currentUserId) {
             return res.status(400).json({
-                message: "Invalid reques. Both current user ID and target user ID are required",
+                message: "Invalid request. Both current user ID and target user ID are required",
                 error: true,
-                successL: false
+                success: false
             })
         }
 
