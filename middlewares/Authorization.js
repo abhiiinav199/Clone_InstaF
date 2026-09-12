@@ -24,8 +24,8 @@ export const loginValidation = (req, res, next)=>{
             })
         }
 
-        //setting token inside req.userId
-        req.user= decode?._id
+        //setting token inside req.user
+        req.user= decode
 
         next()
     } catch (error) {

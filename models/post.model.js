@@ -33,7 +33,7 @@ const postSchema = new mongoose.Schema({
             ref: "Comment"
         }
     ],
-    postDecription:{
+    postDescription:{
         type: String,
         trim: true,
     }
