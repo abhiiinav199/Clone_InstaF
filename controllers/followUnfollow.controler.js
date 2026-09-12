@@ -40,6 +40,11 @@ export const follow = async (req, res) => {
         //already Followed
         const currentUser = await UserModel.findById(currentUserId)
 
+
+        //another way of checking using equals() method of mongoose which is available for mongodb objects(in this case Id's are objectId's)
+        // if (currentUser.following.some(id => id.equals(targetUserId)))
+         
+        //if we dont use equals() method then we have to convert it to string
         if (currentUser.following.some(id => id.toString() === targetUserId)) {
             return res.status(400).json({
                 error: true,
@@ -48,6 +53,10 @@ export const follow = async (req, res) => {
             })
         }
 
+        //another way of checking using equals() method of mongoose which is available for mongodb objects(in this case Id's are objectId's)
+        // if (targetUser.followers.some(id => id.equals(currentUserId)))
+
+        //if we dont use equals() method then we have to convert it to string
         if (targetUser.followers.some(id => id.toString() === currentUserId)) {
             return res.status(400).json({
                 message: "You are already following this user",
