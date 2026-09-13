@@ -94,27 +94,45 @@ export const follow = async (req, res) => {
       });
     }
 
-    //direct follow and update targetUser
-    const updatedTargetedUser = await UserModel.findByIdAndUpdate(
-      targetUserId,
-      {
-        $addToSet: { followers: currentUserId },
-      },
-      {
-        new: true,
-      },
-    );
+    //direct follow and update targetUser -This is Sequential query, instead of this used Promise.all()
 
-    //update current user
-    const updatedCurrentUser = await UserModel.findByIdAndUpdate(
-      currentUserId,
-      {
-        $addToSet: { following: targetUserId },
-      },
-      {
-        new: true,
-      },
-    );
+    // const updatedTargetedUser = await UserModel.findByIdAndUpdate(
+    //   targetUserId,
+    //   {
+    //     $addToSet: { followers: currentUserId },
+    //   },
+    //   {
+    //     new: true,
+    //   },
+    // );
+
+    // //update current user
+    // const updatedCurrentUser = await UserModel.findByIdAndUpdate(
+    //   currentUserId,
+    //   {
+    //     $addToSet: { following: targetUserId },
+    //   },
+    //   {
+    //     new: true,
+    //   },
+    // );
+    // ✅ Parallel DB Updates using Promise.all
+    const [updatedTargetedUser, updatedCurrentUser] = await Promise.all([
+      UserModel.findByIdAndUpdate(
+        targetUserId,
+        {
+          $addToSet: { followers: currentUserId },
+        },
+        { new: true },
+      ),
+      UserModel.findByIdAndUpdate(
+        currentUserId,
+        {
+          $addToSet: { following: targetUserId },
+        },
+        { new: true },
+      ),
+    ]);
 
     return res.status(200).json({
       message: "User followed successfully",
@@ -185,23 +203,40 @@ export const unfollow = async (req, res) => {
       });
     }
 
-    // update target user- removing
-    const updatedTargetUser = await UserModel.findByIdAndUpdate(
-      targetUserId,
-      {
-        $pull: { followers: currentUserId },
-      },
-      { new: true },
-    );
+    // update target user- removing(Sequential query, instead use Promise.all())
+    // const updatedTargetUser = await UserModel.findByIdAndUpdate(
+    //   targetUserId,
+    //   {
+    //     $pull: { followers: currentUserId },
+    //   },
+    //   { new: true },
+    // );
 
-    //update current user- removing
-    const updateCurrentUser = await UserModel.findByIdAndUpdate(
-      currentUserId,
-      {
-        $pull: { following: targetUserId },
-      },
-      { new: true },
-    );
+    //update current user- removing(Sequential query, instead use Promise.all())
+    // const updateCurrentUser = await UserModel.findByIdAndUpdate(
+    //   currentUserId,
+    //   {
+    //     $pull: { following: targetUserId },
+    //   },
+    //   { new: true },
+    // );
+    // ✅ Parallel DB Updates using Promise.all
+    const [updatedTargetUser, updatedCurrentUser] = await Promise.all([
+      UserModel.findByIdAndUpdate(
+        targetUserId,
+        {
+          $pull: { followers: currentUserId },
+        },
+        { new: true },
+      ),
+      UserModel.findByIdAndUpdate(
+        currentUserId,
+        {
+          $pull: { following: targetUserId },
+        },
+        { new: true },
+      ),
+    ]);
 
     return res.status(200).json({
       message: "User unfollowed successfully",
@@ -289,23 +324,41 @@ export const acceptFollowRequest = async (req, res) => {
       });
     }
 
-    //  accept follow request update both user
-    const updatedCurrentUser = await UserModel.findByIdAndUpdate(
-      currentUserId,
-      {
-        $addToSet: { followers: targetUserId },
-        $pull: { pendingFollowersRequest: targetUserId },
-      },
-      { new: true },
-    );
+    //  accept follow request update both user but it's sequential so this query will take time. so, better approach is done below using Promise.all()
+    // const updatedCurrentUser = await UserModel.findByIdAndUpdate(
+    //   currentUserId,
+    //   {
+    //     $addToSet: { followers: targetUserId },
+    //     $pull: { pendingFollowersRequest: targetUserId },
+    //   },
+    //   { new: true },
+    // );
 
-    const updatedTargetUser = await UserModel.findByIdAndUpdate(
-      targetUserId,
-      {
-        $addToSet: { following: currentUserId },
-      },
-      { new: true },
-    );
+    // const updatedTargetUser = await UserModel.findByIdAndUpdate(
+    //   targetUserId,
+    //   {
+    //     $addToSet: { following: currentUserId },
+    //   },
+    //   { new: true },
+    // );
+
+    const [updatedCurrentUser, updatedTargetUser] = await Promise.all([
+      UserModel.findByIdAndUpdate(
+        currentUserId,
+        {
+          $addToSet: { followers: targetUserId },
+          $pull: { pendingFollowersRequest: targetUserId },
+        },
+        { new: true },
+      ),
+      UserModel.findByIdAndUpdate(
+        targetUserId,
+        {
+          $addToSet: { following: currentUserId },
+        },
+        { new: true },
+      ),
+    ]);
 
     // return response
     return res.status(200).json({
@@ -332,7 +385,7 @@ export const rejectFollowRequest = async (req, res) => {
     const currentUserId = req.user.userId;
 
     //validation
-    const foundUser= await UserModel.findById(currentUserId);
+    const foundUser = await UserModel.findById(currentUserId);
     if (!foundUser) {
       return res.status(404).json({
         success: false,
