@@ -27,8 +27,12 @@ export const follow = async (req, res) => {
       });
     }
 
-    //target userExist or not
-    const targetUser = await UserModel.findById(targetUserId);
+    //target user & current user exist or not concurrently
+    const [targetUser, currentUser] = await Promise.all([
+      UserModel.findById(targetUserId),
+      UserModel.findById(currentUserId),
+    ]);
+
     if (!targetUser) {
       return res.status(404).json({
         error: true,
@@ -36,9 +40,6 @@ export const follow = async (req, res) => {
         message: "User not found",
       });
     }
-
-    //already Followed
-    const currentUser = await UserModel.findById(currentUserId);
 
     //another way of checking using equals() method of mongoose which is available for mongodb objects(in this case Id's are objectId's)
     // if (currentUser.following.some(id => id.equals(targetUserId)))
@@ -280,8 +281,11 @@ export const acceptFollowRequest = async (req, res) => {
     //     })
     // }
 
-    //target userExist or not
-    const targetUser = await UserModel.findById(targetUserId);
+    //target user & current user exist or not concurrently
+    const [targetUser, currentUser] = await Promise.all([
+      UserModel.findById(targetUserId),
+      UserModel.findById(currentUserId),
+    ]);
 
     if (!targetUser) {
       return res.status(404).json({
@@ -292,8 +296,13 @@ export const acceptFollowRequest = async (req, res) => {
       });
     }
 
-    //current userExist or Not
-    const currentUser = await UserModel.findById(currentUserId);
+    if (!currentUser) {
+      return res.status(404).json({
+        message: "Current user not found",
+        error: true,
+        success: false,
+      });
+    }
 
     //already followed check
     if (currentUser.followers.some((id) => id.toString() === targetUserId)) {

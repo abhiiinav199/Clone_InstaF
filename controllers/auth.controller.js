@@ -65,8 +65,12 @@ export const signUp = async (req, res) => {
       });
     }
 
-    //check if user already exists or not
-    const existedUser = await UserModel.findOne({ email: email });
+    // Parallel validation: check if user already exists and get latest otp concurrently
+    const [existedUser, latestOtp] = await Promise.all([
+      UserModel.findOne({ email: email }),
+      OtpModel.findOne({ email: email }).sort({ createdAt: -1 }),
+    ]);
+
     if (existedUser) {
       return res.status(400).json({
         error: true,
@@ -74,8 +78,6 @@ export const signUp = async (req, res) => {
         message: "Email already registered",
       });
     }
-
-    const latestOtp = await OtpModel.findOne({ email }).sort({ createdAt: -1 });
 
     if (!latestOtp) {
       return res.status(400).json({
@@ -285,16 +287,16 @@ export const resetPasswordOtpVerify = async (req, res) => {
 //reset password
 export const resetPassword = async (req, res) => {
   try {
-    const { email, otp, password, confirmPssword } = req.body;
+    const { email, otp, password, confirmPassword } = req.body;
     const NumberOtp = Number(otp);
-    if (!email || !otp || !password || !confirmPssword) {
+    if (!email || !otp || !password || !confirmPassword) {
       return res.status(400).json({
         error: true,
         success: false,
         message: "All fields are required",
       });
     }
-    if (password !== confirmPssword) {
+    if (password !== confirmPassword) {
       return res.status(400).json({
         error: true,
         success: false,
