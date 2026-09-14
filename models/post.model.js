@@ -6,7 +6,7 @@ const postSchema = new mongoose.Schema({
             type: String,
             required: true
         },
-        postId: {          // Storing cloudinary publicId so that while deleting it will also delete from cloudinary
+        postId: {          // Storing cloudinary publicId(after uploading cloudinary returns publicId for each image/video) so that while deleting it will also delete from cloudinary
             type: String,
             required: true
         },
