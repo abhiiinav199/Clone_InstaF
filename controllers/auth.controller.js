@@ -9,13 +9,13 @@ import { generateToken } from "../utils/generateToken.js";
 export const otpSave = async (req, res) => {
   try {
     // fetch email
-    const { email } = req.body;
+    const { email, userName } = req.body;
 
-    if (!email) {
+    if (!email || !userName) {
       return res.status(400).json({
         error: true,
         success: false,
-        message: "Something went wrong during fetching email",
+        message: "Something went wrong during fetching details",
       });
     }
     // find user is already registered
@@ -28,6 +28,18 @@ export const otpSave = async (req, res) => {
         message: "User is already registered",
       });
     }
+
+    //find weather username already exists or not
+    const userNameExists = await UserModel.findOne({userName: userName})
+
+    if (userNameExists) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Username already exists",
+      });
+    }
+
     const otp = otpgenerator.generate(4, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
