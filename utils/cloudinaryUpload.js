@@ -31,9 +31,9 @@ export const cloudinaryUpload = async (file, folder, height, width) => {
 
 
 //post delete function
-export const deletePost = async (postId) => {
+export const deletePostCloudinary = async (postId, resource_type = "image") => {
     try {
-        const result = await cloudinary.uploader.destroy(postId)
+        const result = await cloudinary.uploader.destroy(postId, { resource_type: resource_type })
         return result
     } catch (error) {
         throw error

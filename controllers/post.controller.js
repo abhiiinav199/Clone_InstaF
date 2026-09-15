@@ -1,5 +1,5 @@
 import PostModel from "../models/post.model.js";
-import { cloudinaryUpload } from "../utils/cloudinaryUpload.js";
+import { cloudinaryUpload, deletePostCloudinary } from "../utils/cloudinaryUpload.js";
 
 // check file is supported or not
 const isFileTypeSupported = (fileType, supportTypes) => {
@@ -207,6 +207,74 @@ export const editPost = async (req, res) => {
       success: true,
       error: false,
       data: updatedPost,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      success: false,
+      error: true,
+    });
+  }
+};
+
+export const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    //validation
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        error: true,
+        message: "Something went wrong during fetching postID",
+      });
+    }
+
+    //getting userId from middleware from authorization.js(middleware folder)
+    const userId = req.user?.userId;
+
+    //validation
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: true,
+        message: "Something went wrong during fetching userID",
+      });
+    }
+
+    //check post exist or not
+    const existingPostDB = await PostModel.findById(postId);
+
+    if (!existingPostDB) {
+      return res.status(404).json({
+        success: false,
+        error: true,
+        message: "Post not found",
+      });
+    }
+
+    //check userId and post owner is same or not
+    if (existingPostDB?.user.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        error: true,
+        message: "You are not authorized to delete this post",
+      });
+    }
+
+
+
+    const result = await Promise.all(existingPostDB?.media.map((media) => deletePostCloudinary(media?.postId, media?.postType)) ?? [] ) 
+
+    //delete post
+    const deletedPost = await PostModel.findByIdAndDelete(postId);
+
+
+    return res.status(200).json({
+      message: "Post deleted successfully",
+      success: true,
+      error: false,
+      data: deletedPost,
     });
   } catch (error) {
     return res.status(500).json({
