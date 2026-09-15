@@ -108,7 +108,7 @@ export const postUpload = async (req, res) => {
 
     // let mediaType = hasVideo && hasImage ? "Post" : hasVideo ? "Video" : "Image"
     let mediaType =
-      (hasVideo && hasImage)
+      hasVideo && hasImage
         ? "Post"
         : hasVideo
           ? "Video"
@@ -133,6 +133,81 @@ export const postUpload = async (req, res) => {
     //     postType: uploadPost.resource_type
 
     //  })
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || error,
+      success: false,
+      error: true,
+    });
+  }
+};
+
+export const editPost = async (req, res) => {
+  try {
+    const { postId, postDescription = "" } = req.body;
+
+    //validation
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        error: true,
+        message: "Something went wrong during fetching postID",
+      });
+    }
+
+    //getting userId from middleware from authorization.js(middleware folder)
+    const userId = req.user?.userId;
+
+    //validation
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: true,
+        message: "Something went wrong during fetching userID",
+      });
+    }
+
+    //check post exist or not
+    const existingPost = await PostModel.findById(postId);
+
+    if (!existingPost) {
+      return res.status(404).json({
+        success: false,
+        error: true,
+        message: "Post not found",
+      });
+    }
+
+    //check userId and post owner is same or not
+    if (existingPost?.user.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        error: true,
+        message: "You are not authorized to edit this post",
+      });
+    }
+
+    //update post
+    const updatedPost = await PostModel.findByIdAndUpdate(
+      postId,
+      {
+        $set: { postDescription: postDescription },
+      },
+      { new: true },
+    );
+
+    //checking media if it contains video then it's a reel else post
+    const updatedPostType = updatedPost.media.some(
+      (m) => m.postType === "video")
+      ? "Reel"
+      : "Post";
+
+    return res.status(200).json({
+      message: `${updatedPostType} updated successfully`,
+      success: true,
+      error: false,
+      data: updatedPost,
+    });
   } catch (error) {
     return res.status(500).json({
       message: error.message || error,
