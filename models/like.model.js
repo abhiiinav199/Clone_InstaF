@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const likeSchema= new mongoose.Schema({
-    user:{
+    user:{        //Liker(user who liked the post)
         type: mongoose.Schema.Types.ObjectId,
         ref:"User",
         required: true
