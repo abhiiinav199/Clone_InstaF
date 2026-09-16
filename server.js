@@ -10,6 +10,7 @@ import followUnfollowRouter from './routes/followUnfollow.route.js'
 dotenv.config({})
 import mongoose from "mongoose"
 import postRouter from './routes/post.route.js'
+import likeRouter from './routes/like.routes.js'
 
 const PORT = process.env.PORT || 8080
 const app = express()
@@ -89,6 +90,7 @@ app.get("/", async (_, res) => {
 app.use("/api/v1/auth", userRouter)
 app.use("/api/v1", followUnfollowRouter)
 app.use("/api/v1/", postRouter)
+app.use("/api/v1/", likeRouter)
 
 const startServer = async () => {
     try {
