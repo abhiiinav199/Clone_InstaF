@@ -90,9 +90,9 @@ app.get("/", async (_, res) => {
 
 app.use("/api/v1/auth", userRouter)
 app.use("/api/v1", followUnfollowRouter)
-app.use("/api/v1/", postRouter)
-app.use("/api/v1/", likeRouter)
-app.use("api/v1/", commentRouter)
+app.use("/api/v1", postRouter)
+app.use("/api/v1", likeRouter)
+app.use("api/v1", commentRouter)
 
 const startServer = async () => {
     try {
