@@ -30,7 +30,7 @@ export const otpSave = async (req, res) => {
     }
 
     //find weather username already exists or not
-    const userNameExists = await UserModel.findOne({userName: userName})
+    const userNameExists = await UserModel.findOne({ userName: userName });
 
     if (userNameExists) {
       return res.status(400).json({
@@ -372,5 +372,33 @@ export const resetPassword = async (req, res) => {
       error: true,
       success: false,
     });
+  }
+};
+
+//user suggestion (People you may know api)
+export const suggestUser = async (req, res) => {
+  try {
+    //fetch userId from middleware
+    const userId= req.user.userId
+    if(!userId){
+      return res.status(400).json({
+        error: true,
+        success:false,
+        message: "Something went wrong while fetching details."
+      })
+    }
+
+    //userDetails
+    const user= await UserModel.findById(userId)
+    if(!user){
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found"
+      })
+    }
+
+  } catch (error) {
+
   }
 };
