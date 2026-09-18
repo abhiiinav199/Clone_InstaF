@@ -384,7 +384,7 @@ export const suggestUser = async (req, res) => {
       return res.status(400).json({
         error: true,
         success: false,
-        message: "Something went wrong while fetching details."
+        message: "Something went wrong while fetching details.",
       });
     }
 
@@ -394,20 +394,62 @@ export const suggestUser = async (req, res) => {
       return res.status(404).json({
         error: true,
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
-    //collecting following Id's of user 
-    const followingId = userDetails.following.map(f => f._id.toString());
+    if (userDetails.following.length < 1) {
+          if (userDetails.following.length < 1) {
+      const allSuggestsUser = await UserModel.aggregate([
+        // 1. Khud ko exclude karo
+        {
+          $match: {
+            _id: { $ne: userDetails._id },
+          },
+        },
+        // 2. Followers array ka count calculate karo (followersCount)
+        {
+          $addFields: {
+            followersCount: { $size: "$followers" },
+          },
+        },
+        // 3. Sabse zyada followers wale upar (Descending: -1)
+        {
+          $sort: {
+            followersCount: -1,
+          },
+        },
+        // 4. top 10 user
+        {
+          $limit: 10,
+        },
+        // 5. Remove Password (Security)
+        {
+          $project: {
+            password: 0,
+          },
+        },
+      ]);
+
+      return res.status(200).json({
+        error: false,
+        success: true,
+        data: allSuggestsUser,
+      });
+    }
+
+    }
+
+    //collecting following Id's of user
+    const followingId = userDetails.following.map((f) => f._id.toString());
 
     //find all following of friends
     const friendDetails = await UserModel.find({ _id: { $in: followingId } });
 
     //filtering id's of suggested users
     let suggestions = new Set();
-    friendDetails.forEach(friend => {
-      friend.following.forEach(fof => {
+    friendDetails.forEach((friend) => {
+      friend.following.forEach((fof) => {
         const fofId = fof.toString();
 
         if (fofId !== userId && !followingId.includes(fofId)) {
@@ -422,17 +464,19 @@ export const suggestUser = async (req, res) => {
     //getting all user details of suggested users
     // CHANGED: Use 'let' instead of 'const' so it can be reassigned in the fallback below
     let allSuggestsUser = await UserModel.find({
-      _id: { $in: arr }
-    }).select("userName profilePicture about followers").limit(20);
+      _id: { $in: arr },
+    })
+      .select("userName profilePicture about followers")
+      .limit(20);
 
     // Fallback: If no friends-of-friends found, show random popular users
     if (allSuggestsUser.length === 0) {
       allSuggestsUser = await UserModel.find({
-        _id: { $nin: [...followingId, userId] }
+        _id: { $nin: [...followingId, userId] },
       })
         .select("userName profilePicture about followers")
         .limit(10);
-    } 
+    }
 
     //return response
     return res.status(200).json({
@@ -440,12 +484,11 @@ export const suggestUser = async (req, res) => {
       success: true,
       data: allSuggestsUser,
     });
-
   } catch (error) {
     return res.status(500).json({
       error: true,
       success: false,
-      message: error.message || error
+      message: error.message || error,
     });
   }
 };
