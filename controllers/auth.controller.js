@@ -379,26 +379,73 @@ export const resetPassword = async (req, res) => {
 export const suggestUser = async (req, res) => {
   try {
     //fetch userId from middleware
-    const userId= req.user.userId
-    if(!userId){
+    const userId = req.user.userId;
+    if (!userId) {
       return res.status(400).json({
         error: true,
-        success:false,
+        success: false,
         message: "Something went wrong while fetching details."
-      })
+      });
     }
 
     //userDetails
-    const user= await UserModel.findById(userId)
-    if(!user){
+    const userDetails = await UserModel.findById(userId).populate("following");
+    if (!userDetails) {
       return res.status(404).json({
         error: true,
         success: false,
         message: "User not found"
-      })
+      });
     }
 
-  } catch (error) {
+    //collecting following Id's of user 
+    const followingId = userDetails.following.map(f => f._id.toString());
 
+    //find all following of friends
+    const friendDetails = await UserModel.find({ _id: { $in: followingId } });
+
+    //filtering id's of suggested users
+    let suggestions = new Set();
+    friendDetails.forEach(friend => {
+      friend.following.forEach(fof => {
+        const fofId = fof.toString();
+
+        if (fofId !== userId && !followingId.includes(fofId)) {
+          suggestions.add(fofId);
+        }
+      });
+    });
+
+    //converting Set(){"id's", "id's"} to array
+    const arr = [...suggestions];
+
+    //getting all user details of suggested users
+    // CHANGED: Use 'let' instead of 'const' so it can be reassigned in the fallback below
+    let allSuggestsUser = await UserModel.find({
+      _id: { $in: arr }
+    }).select("userName profilePicture about followers").limit(20);
+
+    // Fallback: If no friends-of-friends found, show random popular users
+    if (allSuggestsUser.length === 0) {
+      allSuggestsUser = await UserModel.find({
+        _id: { $nin: [...followingId, userId] }
+      })
+        .select("userName profilePicture about followers")
+        .limit(10);
+    } 
+
+    //return response
+    return res.status(200).json({
+      error: false,
+      success: true,
+      data: allSuggestsUser,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error
+    });
   }
 };
