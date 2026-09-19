@@ -623,6 +623,7 @@ export const getAllFollowRequest = async (req, res) => {
     }
     // return response
     return res.status(200).json({
+      error: false,
       success: true,
       message: "Successfully fetched allPendingFollowRequests",
       count: userDetails.pendingFollowersRequest.length,
