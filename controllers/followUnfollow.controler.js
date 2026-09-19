@@ -455,66 +455,142 @@ export const rejectFollowRequest = async (req, res) => {
 };
 
 //remove follow request
-export const removeFollowRequest= async (req, res)=>{
-  try{
+export const removeFollowRequest = async (req, res) => {
+  try {
     //fetching targetUserId from params
-    const {targetUserId} = req.params;
+    const { targetUserId } = req.params;
     //validation
-    if(!targetUserId){
-      return res.status(400).json({
-        error: true,
-        success:false,
-        message: "Something went wrong during fetching targetUserId"
-      })
-    }
-    // fetching id from middleware
-    const userId = req.user.userId
-    //validation
-    if(!userId){
+    if (!targetUserId) {
       return res.status(400).json({
         error: true,
         success: false,
-        message: "Something went wrong while fetching userId"
-      })
+        message: "Something went wrong during fetching targetUserId",
+      });
+    }
+    // fetching id from middleware
+    const userId = req.user.userId;
+    //validation
+    if (!userId) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Something went wrong while fetching userId",
+      });
     }
 
-    const targetUser = await UserModel.findById(targetUserId)
+    const targetUser = await UserModel.findById(targetUserId);
 
-    if(!targetUser){
+    if (!targetUser) {
       return res.status(404).json({
         error: true,
         success: false,
-        message: "Requested user request not found"
-      })
+        message: "Requested user request not found",
+      });
     }
 
     // check follow request
-    if(!targetUser.pendingFollowersRequest.some(id=> id.equals(userId))){ //another way- (id) => id.toString() === userId.toString(), instead used mongoDb "equals" 
+    if (!targetUser.pendingFollowersRequest.some((id) => id.equals(userId))) {
+      //another way- (id) => id.toString() === userId.toString(), instead used mongoDb "equals"
       return res.status(400).json({
         error: true,
         success: false,
-        message: "Pending follow request not found."
-      })
+        message: "Pending follow request not found.",
+      });
     }
 
     //update target user db
-    const updateTargetUser=  await UserModel.findByIdAndUpdate(targetUserId, {
-      $pull:{pendingFollowersRequest: userId}
-    })
-
+    const updateTargetUser = await UserModel.findByIdAndUpdate(targetUserId, {
+      $pull: { pendingFollowersRequest: userId },
+    });
 
     // return response
     return res.status(200).json({
       error: false,
       success: true,
-      message: "Successfully removed pending follow request."
-    })
-
-  }catch (error){
+      message: "Successfully removed pending follow request.",
+    });
+  } catch (error) {
     return res.status(500).json({
-      error: true, 
+      error: true,
       success: false,
-      message: error.message || error
-    })
+      message: error.message || error,
+    });
   }
-}
+};
+
+//remove follower
+export const removeFollower = async (req, res) => {
+  try {
+    const { targetUserId } = req.params;
+    const userId = req.user.userId;
+
+    if (!targetUserId || !userId) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Something went wrong during fetching Id's",
+      });
+    }
+
+    
+    // Parallel fetch both user details
+    const [userDetails, targetUserDetails] = await Promise.all([
+      UserModel.findById(userId),
+      UserModel.findById(targetUserId),
+    ]);
+      if (!userDetails) {
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found"
+      });
+    }
+     if (!targetUserDetails) {
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "Target user not found"
+      });
+    }
+
+    if (!userDetails.followers.some((id) => id.equals(targetUserId))) {
+      return res.status(400).json({
+        success: false,
+        message: "This is not your follower",
+      });
+    }
+
+    if (!targetUserDetails.following.some((id) => id.equals(userId))) {
+      return res.status(400).json({
+        success: false,
+        message: "This is not your follower",
+      });
+    }
+
+    //update Both
+     await Promise.all([
+      UserModel.findByIdAndUpdate(
+        userId,
+        { $pull: { followers: targetUserId } },
+        { new: true }
+      ),
+      UserModel.findByIdAndUpdate(
+        targetUserId,
+        { $pull: { following: userId } }, 
+        { new: true }
+      )
+    ]);
+
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Successfully removed follower.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};
