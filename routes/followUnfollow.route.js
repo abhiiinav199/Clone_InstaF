@@ -1,6 +1,6 @@
 import express from "express"
 import { loginValidation } from "../middlewares/Authorization.js"
-import { acceptFollowRequest, follow, rejectFollowRequest, removeFollower, removeFollowRequest, unfollow } from "../controllers/followUnfollow.controler.js"
+import { acceptFollowRequest, follow, getAllFollowRequest, rejectFollowRequest, removeFollower, removeFollowRequest, unfollow } from "../controllers/followUnfollow.controler.js"
 const followUnfollowRouter = express.Router()
 
 followUnfollowRouter.post("/follow", loginValidation, follow)
@@ -9,5 +9,6 @@ followUnfollowRouter.put("/accept-follow-request", loginValidation, acceptFollow
 followUnfollowRouter.delete("/reject-follow-request/:targetUserId", loginValidation, rejectFollowRequest)
 followUnfollowRouter.delete("/remove-follow-request/:targetUserId", loginValidation, removeFollowRequest)
 followUnfollowRouter.delete("/remove-follower/:targetUserId", loginValidation, removeFollower)
+followUnfollowRouter.get("/get-all-follow-request", loginValidation, getAllFollowRequest)
 
 export default followUnfollowRouter
