@@ -10,5 +10,5 @@ userRouter.post("/log-in", login)
 userRouter.post("/reset-password", resetPasswordOtpSend)
 userRouter.post("/reset-password-otp-verify", resetPasswordOtpVerify)
 userRouter.put("/reset-password", resetPassword)
-userRouter.get("/suggest-user", loginValidation, suggestUser)
+userRouter.get("/suggest-user", loginValidation, sugggitestUser)
 export default userRouter

@@ -399,12 +399,16 @@ export const suggestUser = async (req, res) => {
     }
 
     if (userDetails.following.length < 1) {
+      /*
+    Reason why using aggregation here- MongoDB mein jab followers ek Array ([]) hota hai, toh normal .sort({ followers: -1 }) array ke size/count par sort nahi kar sakta.
+    Agar aapko sabse zyada followers wale users (most followed) top par lane hain, toh MongoDB Aggregation Pipeline ka use kiya jata hai.
+    */
       //id's of all friends whom the user is following
-       const allSuggestsUser = await UserModel.aggregate([
+      const allSuggestsUser = await UserModel.aggregate([
         // 1. Khud ko exclude karo
         {
           $match: {
-            _id: { $ne: new mongoose.Types.ObjectId(userId)}, //new mongoose.Types.ObjectId("string_id") ka kaam hota hai normal String ko MongoDB ke binary "ObjectId" mein convert karna.
+            _id: { $ne: new mongoose.Types.ObjectId(userId) }, //new mongoose.Types.ObjectId("string_id") ka kaam hota hai normal String ko MongoDB ke binary "ObjectId" mein convert karna.
           },
         },
         // 2. Followers array ka count calculate karo (followersCount)
@@ -431,15 +435,12 @@ export const suggestUser = async (req, res) => {
         },
       ]);
 
-         
       return res.status(200).json({
         error: false,
         success: true,
         data: allSuggestsUser,
       });
     }
-
-    
 
     //collecting following Id's of user
     const followingId = userDetails.following.map((f) => f._id.toString());
