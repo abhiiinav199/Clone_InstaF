@@ -399,12 +399,12 @@ export const suggestUser = async (req, res) => {
     }
 
     if (userDetails.following.length < 1) {
-          if (userDetails.following.length < 1) {
-      const allSuggestsUser = await UserModel.aggregate([
+      //id's of all friends whom the user is following
+       const allSuggestsUser = await UserModel.aggregate([
         // 1. Khud ko exclude karo
         {
           $match: {
-            _id: { $ne: userDetails._id },
+            _id: { $ne: new mongoose.Types.ObjectId(userId)}, //new mongoose.Types.ObjectId("string_id") ka kaam hota hai normal String ko MongoDB ke binary "ObjectId" mein convert karna.
           },
         },
         // 2. Followers array ka count calculate karo (followersCount)
@@ -431,6 +431,7 @@ export const suggestUser = async (req, res) => {
         },
       ]);
 
+         
       return res.status(200).json({
         error: false,
         success: true,
@@ -438,7 +439,7 @@ export const suggestUser = async (req, res) => {
       });
     }
 
-    }
+    
 
     //collecting following Id's of user
     const followingId = userDetails.following.map((f) => f._id.toString());
