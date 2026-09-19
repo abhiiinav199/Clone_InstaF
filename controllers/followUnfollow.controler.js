@@ -532,24 +532,23 @@ export const removeFollower = async (req, res) => {
       });
     }
 
-    
     // Parallel fetch both user details
     const [userDetails, targetUserDetails] = await Promise.all([
       UserModel.findById(userId),
       UserModel.findById(targetUserId),
     ]);
-      if (!userDetails) {
+    if (!userDetails) {
       return res.status(404).json({
         error: true,
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
-     if (!targetUserDetails) {
+    if (!targetUserDetails) {
       return res.status(404).json({
         error: true,
         success: false,
-        message: "Target user not found"
+        message: "Target user not found",
       });
     }
 
@@ -568,23 +567,66 @@ export const removeFollower = async (req, res) => {
     }
 
     //update Both
-     await Promise.all([
+    await Promise.all([
       UserModel.findByIdAndUpdate(
         userId,
         { $pull: { followers: targetUserId } },
-        { new: true }
+        { new: true },
       ),
       UserModel.findByIdAndUpdate(
         targetUserId,
-        { $pull: { following: userId } }, 
-        { new: true }
-      )
+        { $pull: { following: userId } },
+        { new: true },
+      ),
     ]);
 
     return res.status(200).json({
       error: false,
       success: true,
       message: "Successfully removed follower.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};
+
+//get all follow request
+export const getAllFollowRequest = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Something went wrong during fetching userId",
+      });
+    }
+
+    const userDetails = await UserModel.findById(userId)
+      .select("pendingFollowersRequest")
+      .populate(
+        "pendingFollowersRequest",
+        "_id userName profilePicture accountPrivate",
+      );
+
+    if (!userDetails) {
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found",
+      });
+    }
+    // return response
+    return res.status(200).json({
+      success: true,
+      message: "Successfully fetched allPendingFollowRequests",
+      count: userDetails.pendingFollowersRequest.length,
+      userDetails: userDetails.pendingFollowersRequest,
     });
   } catch (error) {
     return res.status(500).json({
