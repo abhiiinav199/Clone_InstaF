@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import UserModel from "../models/user.model.js";
 
 //follow controller
@@ -453,3 +454,68 @@ export const rejectFollowRequest = async (req, res) => {
     });
   }
 };
+
+//remove follow request
+export const removeFollowRequest= async (req, res)=>{
+  try{
+    //fetching targetUserId from params
+    const {targetUserId} = req.params;
+    //validation
+    if(!targetUserId){
+      return res.status(400).json({
+        error: true,
+        success:false,
+        message: "Something went wrong during fetching targetUserId"
+      })
+    }
+    // fetching id from middleware
+    const userId = req.user.userId
+    //validation
+    if(!userId){
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Something went wrong while fetching userId"
+      })
+    }
+
+    const targetUser = await UserModel.findById(targetUserId)
+
+    if(!targetUser){
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "Requested user request not found"
+      })
+    }
+
+    // check follow request
+    if(!targetUser.pendingFollowersRequest.some(id=> id.equals(userId))){ //another way- (id) => id.toString() === userId.toString(), instead used mongoDb "equals" 
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Pending follow request not found."
+      })
+    }
+
+    //update target user db
+    const updateTargetUser=  await UserModel.findByIdAndUpdate(targetUserId, {
+      $pull:{pendingFollowersRequest: userId}
+    })
+
+
+    // return response
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Successfully removed pending follow request."
+    })
+
+  }catch (error){
+    return res.status(500).json({
+      error: true, 
+      success: false,
+      message: error.message || error
+    })
+  }
+}
