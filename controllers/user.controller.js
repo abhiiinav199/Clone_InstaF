@@ -1,4 +1,4 @@
-import PostModel from "../models/post.model";
+import PostModel from "../models/post.model.js";
 import UserModel from "../models/user.model.js";
 
 export const profileDetails = async (req, res) => {
