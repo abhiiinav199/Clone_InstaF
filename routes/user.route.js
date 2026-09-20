@@ -1,6 +1,7 @@
 import express from "express"
 import { login, otpSave, resetPassword, resetPasswordOtpSend, resetPasswordOtpVerify, signUp, suggestUser } from "../controllers/auth.controller.js"
 import { loginValidation } from "../middlewares/Authorization.js"
+import { profileDetails } from "../controllers/user.controller.js"
 
 const userRouter= express.Router()
 
