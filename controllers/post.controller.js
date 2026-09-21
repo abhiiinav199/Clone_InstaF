@@ -1,5 +1,9 @@
 import PostModel from "../models/post.model.js";
-import { cloudinaryUpload, deletePostCloudinary } from "../utils/cloudinaryUpload.js";
+import UserModel from "../models/user.model.js";
+import {
+  cloudinaryUpload,
+  deletePostCloudinary,
+} from "../utils/cloudinaryUpload.js";
 
 // check file is supported or not
 const isFileTypeSupported = (fileType, supportTypes) => {
@@ -198,7 +202,8 @@ export const editPost = async (req, res) => {
 
     //checking media if it contains video then it's a reel else post
     const updatedPostType = updatedPost.media.some(
-      (m) => m.postType === "video")
+      (m) => m.postType === "video",
+    )
       ? "Reel"
       : "Post";
 
@@ -262,13 +267,14 @@ export const deletePost = async (req, res) => {
       });
     }
 
-
-
-    const result = await Promise.all(existingPostDB?.media.map((media) => deletePostCloudinary(media?.postId, media?.postType)) ?? [] ) 
+    const result = await Promise.all(
+      existingPostDB?.media.map((media) =>
+        deletePostCloudinary(media?.postId, media?.postType),
+      ) ?? [],
+    );
 
     //delete post
     const deletedPost = await PostModel.findByIdAndDelete(postId);
-
 
     return res.status(200).json({
       message: "Post deleted successfully",
@@ -281,6 +287,76 @@ export const deletePost = async (req, res) => {
       message: error.message || error,
       success: false,
       error: true,
+    });
+  }
+};
+
+export const homePage = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const userId = req.user.userId;
+
+    const userDetails = await UserModel.findById(userId);
+
+    let allPost;
+
+    if (userDetails.following.length > 0) {
+
+
+      const allusersIdsArr = [...userDetails.following, userDetails._id];
+//same code as above
+      // const allusersIdsArr = userDetails.following;
+      // allusersIdsArr.push(userDetails._id);
+
+
+      allPost = await PostModel.find({
+      user: { $in: allusersIdsArr },
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip).limit(limit).populate("user","accountPrivate following followers pendingFollowersRequest profilePicture userName _id").populate({
+            path:"likes",
+            populate:{
+                path:"user"
+            }
+        }).populate({
+            path:"comments",
+            populate:{
+                path:"user"
+            }
+        }).exec();
+    }
+    else{
+      const trendingAllPost = await PostModel.find({}).sort({createdAt: -1}).skip(skip).limit(limit).populate("user","accountPrivate following followers pendingFollowersRequest profilePicture userName _id")
+        .populate({
+            path:"likes",
+            populate:{
+                path:"user"
+            }
+        }).populate({
+            path:"comments",
+            populate:{
+                path:"user"
+            }
+        }).exec();
+
+         allPost = trendingAllPost.filter((post)=>  post.user && post.user.accountPrivate === false);
+    }
+
+     // return response
+    return res.status(200).json({
+        success:true,
+        message:'Successfully fetched posts',
+        data: allPost
+    })
+    
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
     });
   }
 };
