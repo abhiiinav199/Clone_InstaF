@@ -163,9 +163,70 @@ export const uploadProfilePicture = async (req, res) => {
       .exec();
 
     return res.status(200).json({
-      error: true,
+      error: false,
       success: true,
       message: "Profile picture updated successfully",
+      updatedUser: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};
+
+//remove profile picture
+export const removeProfilePicture = async (req, res) => {
+  try {
+    //fetch userId from middleware
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Something went wrong during fetching details",
+      });
+    }
+
+    const userDetails = await UserModel.findById(userId);
+
+    if (!userDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "user not found",
+      });
+    }
+
+    // Delete old picture from Cloudinary if exists
+    if (userDetails.profilePictureId) {
+      await deletePostCloudinary(userDetails.profilePictureId);
+    }
+
+    // Default avatar if DP removed
+    const defaultAvatar = `https://api.dicebear.com/10.x/adventurer/svg?seed=${userDetails.userName}`;
+
+
+    // update user
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        profilePicture: defaultAvatar,
+        profilePictureId: null,
+      },
+      { new: true },
+    )
+      .select("-password")
+      .populate("following")
+      .populate("followers")
+      .exec();
+
+    // return response
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Profile picture removed successfully",
       updatedUser: updatedUser,
     });
   } catch (error) {
