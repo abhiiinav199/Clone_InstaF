@@ -1,7 +1,7 @@
 import express from "express"
 import { login, otpSave, resetPassword, resetPasswordOtpSend, resetPasswordOtpVerify, signUp, suggestUser } from "../controllers/auth.controller.js"
 import { loginValidation } from "../middlewares/Authorization.js"
-import { editProfileDetails, profileDetails, uploadProfilePicture } from "../controllers/user.controller.js"
+import { editProfileDetails, profileDetails, removeProfilePicture, uploadProfilePicture } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.js"
 
 const userRouter= express.Router()
@@ -16,4 +16,5 @@ userRouter.get("/suggest-user", loginValidation, suggestUser)
 userRouter.get("/profile-details/:userId",loginValidation,profileDetails);
 userRouter.put("/edit-profile-details",loginValidation, editProfileDetails)
 userRouter.put("/upload-profile-picture", upload.single("profilePicture"), loginValidation ,uploadProfilePicture)
+userRouter.delete("/remove-follower-picture", loginValidation, removeProfilePicture)
 export default userRouter
