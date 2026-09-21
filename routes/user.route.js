@@ -14,5 +14,5 @@ userRouter.put("/reset-password", resetPassword)
 userRouter.get("/suggest-user", loginValidation, suggestUser)
 userRouter.get("/profile-details/:userId",loginValidation,profileDetails);
 userRouter.put("/edit-profile-details",loginValidation, editProfileDetails)
-
+userRouter.put("/upload-profile-picture", loginValidation ,uploadProfilePicture)
 export default userRouter
