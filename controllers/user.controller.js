@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import PostModel from "../models/post.model.js";
 import UserModel from "../models/user.model.js";
 import {
@@ -5,10 +6,150 @@ import {
   deletePostCloudinary,
 } from "../utils/cloudinaryUpload.js";
 
+// export const profileDetails = async (req, res) => {
+//   try {
+//     // fetch id
+//     const {userId} = req.params;
+//     if (!userId) {
+//       return res.status(400).json({
+//         error: true,
+//         success: false,
+//         message: "Something went wrong while fetching user profile",
+//       });
+//     }
+
+//     const [userDetails, userAllPosts] = await Promise.all([
+//       UserModel.findById(userId)
+//         .populate("following")
+//         .populate("followers")
+//         .exec(),
+
+//       PostModel.find({ user: userId })
+//         .populate({
+//           path: "likes",
+//           populate: {
+//             path: "user",
+//           },
+//         })
+//         .populate({
+//           path: "comments",
+//           populate: {
+//             path: "user",
+//           },
+//         })
+//         .exec(),
+//     ]);
+//     // all userImages
+//    const allImages = await PostModel.aggregate([
+//   {
+//     $match: {
+//       user:new mongoose.Types.ObjectId(userId),
+//       "media.postType": "image",
+//     },
+//   },
+//   {
+//     $project: {
+//       user: 1,
+//       likes: 1,
+//       comments: 1,
+//       postDescription: 1,
+//       createdAt: 1,
+//       updatedAt: 1,
+//       media: {
+//         $filter: {
+//           input: "$media",
+//           as: "item",
+//           cond: {
+//             $eq: ["$$item.postType", "image"],
+//           },
+//         },
+//       },
+//     },
+//   },
+// ]);
+
+// await PostModel.populate(allImages, [
+//   {
+//     path: "likes",
+//     populate: {
+//       path: "user",
+//     },
+//   },
+//   {
+//     path: "comments",
+//     populate: {
+//       path: "user",
+//     },
+//   },
+//   {
+//     path: "user",
+//   },
+// ]);
+
+
+// const allReels = await PostModel.find({user:userId, "media.postType": "video" }).populate({
+//             path:"likes",
+//             populate:{
+//                 path:"user"
+//             }
+//         }).populate({
+//             path:"comments",
+//             populate:{
+//                 path:"user"
+//             }
+//         }).populate("user").exec();
+
+//  // set user password undefined
+//         userDetails.password = undefined;
+        
+//         // set user followers password undefined
+//         if(userDetails.followers.length){
+//             userDetails.followers.forEach((user) => {
+//                 user.password = undefined;
+//             })
+//         }
+
+//          // set user following user password undefined
+//         if(userDetails.following.length){
+//             userDetails.following.forEach((user) => {
+//                 user.password = undefined;
+//             })
+//         }
+//     if (!userDetails) {
+//       return res.status(404).json({
+//         error: true,
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+//      // return response
+//         return res.status(200).json({
+//             success:true,
+//             message:"Successfully fetched profile details",
+//             userDetails:userDetails,
+//             allPosts:userAllPosts,
+//             allImages:allImages,
+//             allReels:allReels,
+
+//         })
+//   } catch (error) {
+//     return res.status(500).json({
+//       error: true,
+//       success: false,
+//       message: error.message || error,
+//     });
+//   }
+// };
+
+import mongoose from "mongoose";
+import PostModel from "../models/post.model.js";
+import UserModel from "../models/user.model.js";
+
 export const profileDetails = async (req, res) => {
   try {
-    // fetch id
-    const userId = req.params;
+    // ✅ 1. Destructure userId string from req.params
+    const { userId } = req.params;
+
     if (!userId) {
       return res.status(400).json({
         error: true,
@@ -17,28 +158,31 @@ export const profileDetails = async (req, res) => {
       });
     }
 
+    const objectUserId = new mongoose.Types.ObjectId(userId);
+
+    // Parallel fetch: User details & all posts
     const [userDetails, userAllPosts] = await Promise.all([
       UserModel.findById(userId)
-        .populate("following")
-        .populate("followers")
+        .select("-password")
+        .populate("following", "userName profilePicture accountPrivate")
+        .populate("followers", "userName profilePicture accountPrivate")
         .exec(),
 
       PostModel.find({ user: userId })
+        .sort({ createdAt: -1 })
         .populate({
           path: "likes",
-          populate: {
-            path: "user",
-          },
+          populate: { path: "user", select: "userName profilePicture" },
         })
         .populate({
           path: "comments",
-          populate: {
-            path: "user",
-          },
+          populate: { path: "user", select: "userName profilePicture" },
         })
+        .populate("user", "userName profilePicture")
         .exec(),
     ]);
 
+    // ✅ Null check before accessing properties
     if (!userDetails) {
       return res.status(404).json({
         error: true,
@@ -47,14 +191,26 @@ export const profileDetails = async (req, res) => {
       });
     }
 
+    // Filter images and reels directly in JS or separate queries
+    // Filter Images from userAllPosts
+    const allImages = userAllPosts.filter((post) =>
+      post.media.some((item) => item.postType === "image")
+    );
+
+    // Filter Reels from userAllPosts
+    const allReels = userAllPosts.filter((post) =>
+      post.media.some((item) => item.postType === "video")
+    );
+
+    // ✅ Return response
     return res.status(200).json({
       error: false,
       success: true,
       message: "Successfully fetched profile details",
-      data: {
-        userDetails: userDetails,
-        userAllPosts: userAllPosts,
-      },
+      userDetails: userDetails,
+      allPosts: userAllPosts,
+      allImages: allImages,
+      allReels: allReels,
     });
   } catch (error) {
     return res.status(500).json({
@@ -64,6 +220,7 @@ export const profileDetails = async (req, res) => {
     });
   }
 };
+
 
 export const editProfileDetails = async (req, res) => {
   try {
@@ -206,7 +363,6 @@ export const removeProfilePicture = async (req, res) => {
 
     // Default avatar if DP removed
     const defaultAvatar = `https://api.dicebear.com/10.x/adventurer/svg?seed=${userDetails.userName}`;
-
 
     // update user
     const updatedUser = await UserModel.findByIdAndUpdate(
