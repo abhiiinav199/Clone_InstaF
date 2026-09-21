@@ -141,9 +141,7 @@ import {
 //   }
 // };
 
-import mongoose from "mongoose";
-import PostModel from "../models/post.model.js";
-import UserModel from "../models/user.model.js";
+
 
 export const profileDetails = async (req, res) => {
   try {
