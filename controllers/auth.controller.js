@@ -117,6 +117,7 @@ export const signUp = async (req, res) => {
       email,
       password: hashedPassword,
       profilePicture: avatar,
+      profilePictureId: null
     });
     const u = user.toObject();
     delete u.password;

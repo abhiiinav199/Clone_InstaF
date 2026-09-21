@@ -51,9 +51,10 @@ const userSchema = new mongoose.Schema({
             ref:"User"
         }
     ],
-    // profilePicturId:{
-    //     type:String
-    // },
+    profilePictureId:{
+        type:String,
+        required: true
+    },
     
 }, { timestamps: true })
 

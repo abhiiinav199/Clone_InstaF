@@ -1,7 +1,7 @@
 import express from "express"
 import { login, otpSave, resetPassword, resetPasswordOtpSend, resetPasswordOtpVerify, signUp, suggestUser } from "../controllers/auth.controller.js"
 import { loginValidation } from "../middlewares/Authorization.js"
-import { editProfileDetails, profileDetails } from "../controllers/user.controller.js"
+import { editProfileDetails, profileDetails, uploadProfilePicture } from "../controllers/user.controller.js"
 
 const userRouter= express.Router()
 
@@ -14,4 +14,5 @@ userRouter.put("/reset-password", resetPassword)
 userRouter.get("/suggest-user", loginValidation, suggestUser)
 userRouter.get("/profile-details/:userId",loginValidation,profileDetails);
 userRouter.put("/edit-profile-details",loginValidation, editProfileDetails)
+
 export default userRouter
