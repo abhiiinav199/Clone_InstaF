@@ -50,7 +50,16 @@ export const likePost = async (req, res) => {
         $addToSet: { likes: newLike._id },
       },
       { new: true },
-    );
+    ).populate({
+          path: "likes",
+          populate: { path: "user", select: "userName profilePicture" },
+        })
+        .populate({
+          path: "comments",
+          populate: { path: "user", select: "userName profilePicture" },
+        })
+        .populate("user", "userName profilePicture")
+        .exec();
 
     // return response
     return res.status(200).json({
