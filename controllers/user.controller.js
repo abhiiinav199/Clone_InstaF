@@ -241,7 +241,7 @@ export const editProfileDetails = async (req, res) => {
       userId,
       { $set: updateFields },
       { new: true },
-    ).select("-password");
+    ).select("-password").populate("following").populate("followers");
 
     // return response
     return res.status(200).json({
