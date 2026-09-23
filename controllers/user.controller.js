@@ -391,3 +391,47 @@ export const removeProfilePicture = async (req, res) => {
     });
   }
 };
+
+
+//for update profile data
+export const updateProfileData = async(req, res) =>{
+  try {
+    const userId = req.user.userId
+    if(!userId){
+      return res.status(400).json({
+        error: true, 
+        success: false,
+        message: "Something went wrong while fetching userId"
+      })
+    }
+
+
+  // Parallel fetch: user details & users who received follow request from this user
+    const [userDetails, followingRequest] = await Promise.all([
+      UserModel.findById(userId)
+        .select("-password")
+        .exec(),
+
+      UserModel.find({ pendingFollowersRequest: userId }) 
+        .exec(),
+    ]);
+
+
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Successfully fetched updateProfileData",
+      data: {
+        followingRequest: followingRequest,
+        userDetails: userDetails
+      }
+    })
+
+  } catch (error) {
+      return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+}
