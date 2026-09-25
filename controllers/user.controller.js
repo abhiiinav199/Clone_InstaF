@@ -86,7 +86,6 @@ import {
 //   },
 // ]);
 
-
 // const allReels = await PostModel.find({user:userId, "media.postType": "video" }).populate({
 //             path:"likes",
 //             populate:{
@@ -101,7 +100,7 @@ import {
 
 //  // set user password undefined
 //         userDetails.password = undefined;
-        
+
 //         // set user followers password undefined
 //         if(userDetails.followers.length){
 //             userDetails.followers.forEach((user) => {
@@ -140,8 +139,6 @@ import {
 //     });
 //   }
 // };
-
-
 
 export const profileDetails = async (req, res) => {
   try {
@@ -192,12 +189,12 @@ export const profileDetails = async (req, res) => {
     // Filter images and reels directly in JS or separate queries
     // Filter Images from userAllPosts
     const allImages = userAllPosts.filter((post) =>
-      post.media.some((item) => item.postType === "image")
+      post.media.some((item) => item.postType === "image"),
     );
 
     // Filter Reels from userAllPosts
     const allReels = userAllPosts.filter((post) =>
-      post.media.some((item) => item.postType === "video")
+      post.media.some((item) => item.postType === "video"),
     );
 
     // ✅ Return response
@@ -218,7 +215,6 @@ export const profileDetails = async (req, res) => {
     });
   }
 };
-
 
 export const editProfileDetails = async (req, res) => {
   try {
@@ -241,7 +237,10 @@ export const editProfileDetails = async (req, res) => {
       userId,
       { $set: updateFields },
       { new: true },
-    ).select("-password").populate("following").populate("followers");
+    )
+      .select("-password")
+      .populate("following")
+      .populate("followers");
 
     // return response
     return res.status(200).json({
@@ -392,30 +391,24 @@ export const removeProfilePicture = async (req, res) => {
   }
 };
 
-
 //for update profile data
-export const updateProfileData = async(req, res) =>{
+export const updateProfileData = async (req, res) => {
   try {
-    const userId = req.user.userId
-    if(!userId){
+    const userId = req.user.userId;
+    if (!userId) {
       return res.status(400).json({
-        error: true, 
+        error: true,
         success: false,
-        message: "Something went wrong while fetching userId"
-      })
+        message: "Something went wrong while fetching userId",
+      });
     }
 
-
-  // Parallel fetch: user details & users who received follow request from this user
+    // Parallel fetch: user details & users who received follow request from this user
     const [userDetails, followingRequest] = await Promise.all([
-      UserModel.findById(userId)
-        .select("-password")
-        .exec(),
+      UserModel.findById(userId).select("-password").exec(),
 
-      UserModel.find({ pendingFollowersRequest: userId }) 
-        .exec(),
+      UserModel.find({ pendingFollowersRequest: userId }).exec(),
     ]);
-
 
     return res.status(200).json({
       error: false,
@@ -423,15 +416,99 @@ export const updateProfileData = async(req, res) =>{
       message: "Successfully fetched updateProfileData",
       data: {
         followingRequest: followingRequest,
-        userDetails: userDetails
-      }
-    })
-
+        userDetails: userDetails,
+      },
+    });
   } catch (error) {
-      return res.status(500).json({
+    return res.status(500).json({
       error: true,
       success: false,
       message: error.message || error,
     });
   }
-}
+};
+
+// add profile viewer
+export const addProfileViewer = async (req, res) => {
+  try {
+    //fetch target userID
+    const { targetUserId } = req.body;
+
+    // fetch userId(my) from middleware
+    const userId = req.user.userId;
+
+    if (!targetUserId || !userId) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Something went wrong while fetching Id's",
+      });
+    }
+
+    if (targetUserId === userId) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "You cannot view yourself",
+      });
+    }
+
+    const targetUserDetails =
+      await UserModel.findBydId(targetUserId).select("-password");
+
+    if (!targetUserDetails) {
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    if (targetUserDetails.followers.equals(userId)) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "You are already following this user",
+      });
+    }
+
+    if (
+      targetUserDetails.profileViewers.some(
+        (userObj) => userObj.viewer.toString() === userId,
+      )
+    ) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "User view already added.",
+      });
+    }
+
+    // add view
+    const updatedTargetUser = await UserModel.findByIdAndUpdate(
+      targetUserId,
+      {
+        $push: {
+          profileViewers: {
+            viewer: userId,
+            viewedAt: new Date(),
+          },
+        },
+      },
+      { new: true },
+    );
+
+    // return response
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "View added successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};

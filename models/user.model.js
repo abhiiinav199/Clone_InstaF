@@ -55,6 +55,16 @@ const userSchema = new mongoose.Schema({
         type:String,
         default: null
     },
+    profileViewers:[{
+        viewer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
+        viewedAt:{
+            type: Date,
+            default: Date.now
+        }
+    }]
     
 }, { timestamps: true })
 
