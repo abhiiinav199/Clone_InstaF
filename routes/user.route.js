@@ -12,6 +12,7 @@ import { loginValidation } from "../middlewares/Authorization.js";
 import {
   addProfileViewer,
   editProfileDetails,
+  getAllProfileViewer,
   profileDetails,
   removeProfilePicture,
   updateProfileData,
@@ -43,4 +44,5 @@ userRouter.delete(
 );
 userRouter.get("/update-profile-data", loginValidation, updateProfileData);
 userRouter.post("/add-profile-viewer", loginValidation, addProfileViewer);
+userRouter.get("/get-all-profile-viewer", loginValidation, getAllProfileViewer)
 export default userRouter;
