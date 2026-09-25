@@ -512,3 +512,54 @@ export const addProfileViewer = async (req, res) => {
     });
   }
 };
+
+export const getAllProfileViewer = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Something went wrong during fetching userId",
+      });
+    }
+
+    const viewersDetails = await UserModel.findById(userId)
+      .populate(
+        "profileViewers.viewer",
+        "_id userName email profilePicture accountPrivate",
+      )
+      .select("profileViewers");
+
+    if (!viewersDetails) {
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // const sortedViewers = viewersDetails.profileViewers.sort(
+    //   (a, b) => new Date(b.viewedAt) - new Date(a.viewedAt),
+    // );
+
+    // ✅ 2. Safe sort & filter deleted accounts
+    const viewersList = viewersDetails.profileViewers || [];
+    const sortedViewers = viewersList
+      .filter((item) => item.viewer !== null) // Remove deleted accounts
+      .sort((a, b) => new Date(b.viewedAt) - new Date(a.viewedAt)); // Newest viewer on top
+
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Successfully fetched userProfileViewers",
+      totalViewers: sortedViewers.length,
+      data: { viewersDetails: sortedViewers },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};
