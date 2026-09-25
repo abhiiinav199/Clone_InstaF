@@ -429,12 +429,92 @@ export const updateProfileData = async (req, res) => {
 };
 
 // add profile viewer
+// export const addProfileViewer = async (req, res) => {
+//   try {
+//     //fetch target userID
+//     const { targetUserId } = req.body;
+
+//     // fetch userId(my) from middleware
+//     const userId = req.user.userId;
+
+//     if (!targetUserId || !userId) {
+//       return res.status(400).json({
+//         error: true,
+//         success: false,
+//         message: "Something went wrong while fetching Id's",
+//       });
+//     }
+
+//     if (targetUserId === userId) {
+//       return res.status(400).json({
+//         error: true,
+//         success: false,
+//         message: "You cannot view yourself",
+//       });
+//     }
+
+//     const targetUserDetails =
+//       await UserModel.findById(targetUserId).select("-password");
+
+//     if (!targetUserDetails) {
+//       return res.status(404).json({
+//         error: true,
+//         success: false,
+//         message: "User not found.",
+//       });
+//     }
+
+//     if (targetUserDetails.followers.some(id => id.equals(userId))) {
+//       return res.status(400).json({
+//         error: true,
+//         success: false,
+//         message: "You are already following this user",
+//       });
+//     }
+
+//     if (
+//       targetUserDetails.profileViewers.some(
+//         (userObj) => userObj.viewer.toString() === userId,
+//       )
+//     ) {
+//       return res.status(400).json({
+//         error: true,
+//         success: false,
+//         message: "User view already added.",
+//       });
+//     }
+
+//     // add view
+//     const updatedTargetUser = await UserModel.findByIdAndUpdate(
+//       targetUserId,
+//       {
+//         $push: {
+//           profileViewers: {
+//             viewer: userId,
+//             viewedAt: new Date(),
+//           },
+//         },
+//       },
+//       { new: true },
+//     );
+
+//     // return response
+//     return res.status(200).json({
+//       error: false,
+//       success: true,
+//       message: "View added successfully",
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       error: true,
+//       success: false,
+//       message: error.message || error,
+//     });
+//   }
+// };
 export const addProfileViewer = async (req, res) => {
   try {
-    //fetch target userID
     const { targetUserId } = req.body;
-
-    // fetch userId(my) from middleware
     const userId = req.user.userId;
 
     if (!targetUserId || !userId) {
@@ -449,12 +529,12 @@ export const addProfileViewer = async (req, res) => {
       return res.status(400).json({
         error: true,
         success: false,
-        message: "You cannot view yourself",
+        message: "You cannot view your own profile",
       });
     }
 
-    const targetUserDetails =
-      await UserModel.findBydId(targetUserId).select("-password");
+    // ✅ 1. Fixed typo: findById (not findBydId)
+    const targetUserDetails = await UserModel.findById(targetUserId).select("-password");
 
     if (!targetUserDetails) {
       return res.status(404).json({
@@ -464,7 +544,8 @@ export const addProfileViewer = async (req, res) => {
       });
     }
 
-    if (targetUserDetails.followers.equals(userId)) {
+    // ✅ 2. Fixed: Array check using .some(id => id.equals(userId))
+    if (targetUserDetails.followers.some((id) => id.equals(userId))) {
       return res.status(400).json({
         error: true,
         success: false,
@@ -472,33 +553,35 @@ export const addProfileViewer = async (req, res) => {
       });
     }
 
-    if (
-      targetUserDetails.profileViewers.some(
-        (userObj) => userObj.viewer.toString() === userId,
-      )
-    ) {
-      return res.status(400).json({
-        error: true,
-        success: false,
-        message: "User view already added.",
+    // Check if view already exists
+    const hasAlreadyViewed = (targetUserDetails.profileViewers || []).some(
+      (userObj) => userObj.viewer && userObj.viewer.toString() === userId.toString()
+    );
+
+    if (hasAlreadyViewed) {
+      // ✅ Best Practice: Update timestamp of existing viewer
+      await UserModel.updateOne(
+        { _id: targetUserId, "profileViewers.viewer": userId },
+        { $set: { "profileViewers.$.viewedAt": new Date() } }
+      );
+
+      return res.status(200).json({
+        error: false,
+        success: true,
+        message: "Profile view updated successfully",
       });
     }
 
-    // add view
-    const updatedTargetUser = await UserModel.findByIdAndUpdate(
-      targetUserId,
-      {
-        $push: {
-          profileViewers: {
-            viewer: userId,
-            viewedAt: new Date(),
-          },
+    // Add new viewer
+    await UserModel.findByIdAndUpdate(targetUserId, {
+      $push: {
+        profileViewers: {
+          viewer: userId,
+          viewedAt: new Date(),
         },
       },
-      { new: true },
-    );
+    });
 
-    // return response
     return res.status(200).json({
       error: false,
       success: true,
@@ -512,6 +595,7 @@ export const addProfileViewer = async (req, res) => {
     });
   }
 };
+
 
 export const getAllProfileViewer = async (req, res) => {
   try {
