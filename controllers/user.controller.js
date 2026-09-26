@@ -534,7 +534,8 @@ export const addProfileViewer = async (req, res) => {
     }
 
     // ✅ 1. Fixed typo: findById (not findBydId)
-    const targetUserDetails = await UserModel.findById(targetUserId).select("-password");
+    const targetUserDetails =
+      await UserModel.findById(targetUserId).select("-password");
 
     if (!targetUserDetails) {
       return res.status(404).json({
@@ -555,14 +556,15 @@ export const addProfileViewer = async (req, res) => {
 
     // Check if view already exists
     const hasAlreadyViewed = (targetUserDetails.profileViewers || []).some(
-      (userObj) => userObj.viewer && userObj.viewer.toString() === userId.toString()
+      (userObj) =>
+        userObj.viewer && userObj.viewer.toString() === userId.toString(),
     );
 
     if (hasAlreadyViewed) {
       // ✅ Best Practice: Update timestamp of existing viewer
       await UserModel.updateOne(
         { _id: targetUserId, "profileViewers.viewer": userId },
-        { $set: { "profileViewers.$.viewedAt": new Date() } }
+        { $set: { "profileViewers.$.viewedAt": new Date() } },
       );
 
       return res.status(200).json({
@@ -647,3 +649,98 @@ export const getAllProfileViewer = async (req, res) => {
     });
   }
 };
+
+// Toggle Account Type (Public <-> Private)
+export const setAccountType = async (req, res) => {
+  try {
+    //  fetch from authenticated token
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Something went wrong while fetching userId",
+      });
+    }
+
+    const userDetails = await UserModel.findById(userId);
+
+    if (!userDetails) {
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // CASE 1: Changing from Private -> Public
+    if (userDetails.accountPrivate) {
+      const pendingRequests = userDetails.pendingFollowersRequest || [];
+
+      // If there are pending requests, convert them to actual followers (Instagram logic)
+      if (pendingRequests.length > 0) {
+        await Promise.all([
+          // 1. Add all pending users to followers & clear pending list
+          UserModel.findByIdAndUpdate(userId, {
+            accountPrivate: false,
+            $addToSet: { followers: { $each: pendingRequests } },
+            $set: { pendingFollowersRequest: [] },
+          }),
+          // 2. Add current user to following list of all pending request users
+          UserModel.updateMany(
+            { _id: { $in: pendingRequests } },
+            { $addToSet: { following: userId } }
+          ),
+        ]);
+      } else {
+        // No pending requests, just make public
+        await UserModel.findByIdAndUpdate(userId, {
+          accountPrivate: false,
+        });
+      }
+
+      const updatedUser = await UserModel.findById(userId)
+        .select("-password")
+        .populate("following", "userName profilePicture")
+        .populate("followers", "userName profilePicture");
+
+      return res.status(200).json({
+        error: false,
+        success: true,
+        message: "Your account is now public",
+        updatedUser: updatedUser,
+      });
+    } 
+    // CASE 2: Changing from Public -> Private
+    else {
+      const updatedUser = await UserModel.findByIdAndUpdate(
+        userId,
+        {
+          accountPrivate: true,
+        },
+        { new: true }
+      )
+        .select("-password")
+        .populate("following", "userName profilePicture")
+        .populate("followers", "userName profilePicture");
+
+      return res.status(200).json({
+        error: false,
+        success: true,
+        message: "Your account is now private",
+        updatedUser: updatedUser,
+      });
+    }
+
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};
+
