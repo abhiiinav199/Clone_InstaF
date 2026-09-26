@@ -15,6 +15,7 @@ import {
   getAllProfileViewer,
   profileDetails,
   removeProfilePicture,
+  setAccountType,
   updateProfileData,
   uploadProfilePicture,
 } from "../controllers/user.controller.js";
@@ -45,4 +46,5 @@ userRouter.delete(
 userRouter.get("/update-profile-data", loginValidation, updateProfileData);
 userRouter.post("/add-profile-viewer", loginValidation, addProfileViewer);
 userRouter.get("/get-all-profile-viewer", loginValidation, getAllProfileViewer)
+userRouter.put("/set-account-type", loginValidation, setAccountType)
 export default userRouter;
