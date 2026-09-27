@@ -12,6 +12,7 @@ import { loginValidation } from "../middlewares/Authorization.js";
 import {
   addProfileViewer,
   editProfileDetails,
+  getAllFollowingUser,
   getAllProfileViewer,
   profileDetails,
   removeProfilePicture,
@@ -49,4 +50,5 @@ userRouter.post("/add-profile-viewer", loginValidation, addProfileViewer);
 userRouter.get("/get-all-profile-viewer", loginValidation, getAllProfileViewer)
 userRouter.put("/set-account-type", loginValidation, setAccountType)
 userRouter.get("/search-user", loginValidation, searchUser)
+userRouter.get("/get-all-following", loginValidation, getAllFollowingUser)
 export default userRouter;
