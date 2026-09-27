@@ -15,6 +15,7 @@ import {
   getAllProfileViewer,
   profileDetails,
   removeProfilePicture,
+  searchUser,
   setAccountType,
   updateProfileData,
   uploadProfilePicture,
@@ -47,4 +48,5 @@ userRouter.get("/update-profile-data", loginValidation, updateProfileData);
 userRouter.post("/add-profile-viewer", loginValidation, addProfileViewer);
 userRouter.get("/get-all-profile-viewer", loginValidation, getAllProfileViewer)
 userRouter.put("/set-account-type", loginValidation, setAccountType)
+userRouter.get("/search-user", loginValidation, searchUser)
 export default userRouter;
