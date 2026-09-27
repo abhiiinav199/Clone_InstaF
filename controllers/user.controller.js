@@ -777,3 +777,46 @@ export const searchUser = async (req, res) => {
     });
   }
 };
+
+//get all following users for showing in messages 
+export const getAllFollowingUser = async (req, res)=>{
+  try {
+
+    // fetch userId from middleware
+    const userId = req.user.userId
+    if(!userId){
+      return res.status(400).json({
+        error: true, 
+        success: false,
+        message: "Something went wrong while fetching details."
+      })
+    }
+
+    const userDetails = await UserModel.findById(userId).select("-password").populate("following", "_id userName profilePicture about")
+    
+    if(!userDetails){
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found."
+      })
+    }
+
+    const followingUsers= userDetails.following;
+
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Successfully fetched",
+      data: followingUsers,
+    })
+
+
+  } catch (error) {
+    return res.status(500).json({
+      error: true, 
+      success: false,
+      message: error.message ||error
+    })
+  }
+}
