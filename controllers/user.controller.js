@@ -744,3 +744,36 @@ export const setAccountType = async (req, res) => {
   }
 };
 
+//search user
+export const searchUser = async (req, res) => {
+  try {
+ const userName = (req.query.userName || req.query.query).trim();
+
+
+    if (!userName) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Please provide a valid name",
+      });
+    }
+
+    const allUsers = await Post.find({
+      userName: { $regex: userName, $options: "i" },
+    }).select("_id userName profilePicture accountPrivate about").limit(20);
+
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Founded Users are",
+      data: { allUsers },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};

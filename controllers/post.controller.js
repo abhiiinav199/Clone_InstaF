@@ -382,7 +382,6 @@ export const getAllReels = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-
     const allReels = await Post.aggregate([
       // 1. nested field match
       {
@@ -446,3 +445,5 @@ export const getAllReels = async (req, res) => {
     });
   }
 };
+
+
