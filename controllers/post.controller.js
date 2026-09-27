@@ -382,7 +382,7 @@ export const getAllReels = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const allReels = await Post.aggregate([
+    const allReels = await PostModel.aggregate([
       // 1. nested field match
       {
         $match: { "media.postType": "video" },
@@ -411,7 +411,7 @@ export const getAllReels = async (req, res) => {
     ]);
 
     // Populate related user documents on the plain aggregated objects
-    const populatedReels = await Post.populate(allReels, [
+    const populatedReels = await PostModel.populate(allReels, [
       {
         path: "user",
         select: "_id userName profilePicture accountPrivate",
