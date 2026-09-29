@@ -1,6 +1,6 @@
 import express from "express"
 import { loginValidation } from "../middlewares/Authorization.js"
-import { acceptFollowRequest, follow, getAllFollowRequest, rejectFollowRequest, removeFollower, removeFollowRequest, unfollow } from "../controllers/followUnfollow.controler.js"
+import { acceptFollowRequest, follow, getAllFollowRequest, rejectFollowRequest, removeFollower, removeFollowRequest, unfollow } from "../controllers/followUnfollow.controller.js"
 const followUnfollowRouter = express.Router()
 
 followUnfollowRouter.post("/follow", loginValidation, follow)
