@@ -30,6 +30,19 @@ export const createNewMessage = async (req, res) => {
             message:message,
         });
 
+        if(newMessage){
+            conversation.messages.push(newMessage)
+        }
+        await Promise.all([
+            conversation.save(),newMessage.save()
+        ])
+        
+        return res.status(200).json({
+            error: false,
+            success: true,
+            message:"Message sent"
+        })
+
   } catch (error) {
     return res.status(500).json({
       error: true,
