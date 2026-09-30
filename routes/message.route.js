@@ -5,6 +5,6 @@ const messageRouter= express.Router()
 
 
 messageRouter.post("/create/new/message", loginValidation, createNewMessage)
-messageRouter.get("/get/all/message", loginValidation, getAllMessages)
+messageRouter.get("/get/all/message/:chatUserId", loginValidation, getAllMessages)
 
 export default messageRouter
