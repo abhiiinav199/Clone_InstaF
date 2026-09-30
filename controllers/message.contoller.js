@@ -1,5 +1,6 @@
 import ConversationModel from "../models/conversation.model.js";
 import MessageModel from "../models/message.model.js";
+import UserModel from "../models/user.model.js";
 
 export const createNewMessage = async (req, res) => {
   try {
@@ -13,36 +14,82 @@ export const createNewMessage = async (req, res) => {
       });
     }
 
-     let conversation = await ConversationModel.findOne({
-            members:{$all:[receiverId,senderId]}
-        });
+    let conversation = await ConversationModel.findOne({
+      members: { $all: [receiverId, senderId] },
+    });
 
-        if(!conversation){
-           
-             conversation = await ConversationModel.create({
-                member:[receiverId,senderId]
-            });
-            
-        }
-        const newMessage=  new MessageModel({
-            senderId:senderId,
-            receiverId:receiverId,
-            message:message,
-        });
+    if (!conversation) {
+      conversation = await ConversationModel.create({
+        member: [receiverId, senderId],
+      });
+    }
+    const newMessage = new MessageModel({
+      senderId: senderId,
+      receiverId: receiverId,
+      message: message,
+    });
 
-        if(newMessage){
-            conversation.messages.push(newMessage)
-        }
-        await Promise.all([
-            conversation.save(),newMessage.save()
-        ])
-        
-        return res.status(200).json({
-            error: false,
-            success: true,
-            message:"Message sent"
-        })
+    if (newMessage) {
+      conversation.messages.push(newMessage);
+    }
+    await Promise.all([conversation.save(), newMessage.save()]);
 
+    return res.status(200).json({
+      error: false,
+      success: true,
+      message: "Message sent",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      success: false,
+      message: error.message || error,
+    });
+  }
+};
+
+//get all message
+export const getAllMessages = async (req, res) => {
+  try {
+    const currentId = req.user.userId;
+
+    const { chatUserId } = req.params;
+
+    if (!currentId || !chatUserId) {
+      return res.status(400).json({
+        error: true,
+        success: false,
+        message: "Something went wrong during fetching id's",
+      });
+    }
+
+    const receiverDetails = await UserModel.findOne({ _id: chatUserId }).select(
+      "_id  userName profilePicture",
+    );
+
+    if (!receiverDetails) {
+      return res.status(404).json({
+        error: true,
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const allCoversations = await ConversationModel.findOne({
+      member: { $all: [chatUserId, currentId] },
+    })
+      .populate("messages")
+      .populate("member", "_id userName profilePicture")
+      .exec();
+
+    // return response
+    return res.status(200).json({
+      success: true,
+      message: "Successfully fetched all conversations of both users",
+      allCoversations: allCoversations,
+      receiverDetails: receiverDetails,
+    });
+    
   } catch (error) {
     return res.status(500).json({
       error: true,
