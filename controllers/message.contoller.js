@@ -20,7 +20,7 @@ export const createNewMessage = async (req, res) => {
 
     if (!conversation) {
       conversation = await ConversationModel.create({
-        member: [receiverId, senderId],
+        members: [receiverId, senderId],
       });
     }
     const newMessage = new MessageModel({
@@ -75,21 +75,22 @@ export const getAllMessages = async (req, res) => {
       });
     }
 
-    const allCoversations = await ConversationModel.findOne({
-      member: { $all: [chatUserId, currentId] },
+    const allConversations = await ConversationModel.findOne({
+      members: { $all: [chatUserId, currentId] },
     })
       .populate("messages")
-      .populate("member", "_id userName profilePicture")
+      .populate("members", "_id userName profilePicture")
       .exec();
 
     // return response
     return res.status(200).json({
+      error: false,
       success: true,
       message: "Successfully fetched all conversations of both users",
-      allCoversations: allCoversations,
+      allCoversations: allConversations?.messages || [],
       receiverDetails: receiverDetails,
     });
-    
+
   } catch (error) {
     return res.status(500).json({
       error: true,
